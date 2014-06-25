@@ -8,6 +8,13 @@ public class Krieger : ModuleRules
 	{
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
+        // Custom plugins
+        PublicDependencyModuleNames.AddRange(
+            new string[] {
+                "VaRestPlugin",
+                //"VaQuoleUIPlugin"
+            });
+
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI
