@@ -11,7 +11,8 @@ class AKriegerProjectile : public AActor
 	virtual void PostInitializeComponents() OVERRIDE;
 
 	/** Setup velocity */
-	void InitVelocity(FVector& ShootDirection);
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon|Projectile")
+	void InitVelocity(FVector ShootDirection);
 
 	/** Apply weapon config */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon|Projectile")

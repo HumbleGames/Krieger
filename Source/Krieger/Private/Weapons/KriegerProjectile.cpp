@@ -46,7 +46,7 @@ void AKriegerProjectile::PostInitializeComponents()
 	MyController = GetInstigatorController();
 }
 
-void AKriegerProjectile::InitVelocity(FVector& ShootDirection)
+void AKriegerProjectile::InitVelocity(FVector ShootDirection)
 {
 	if (MovementComp)
 	{
