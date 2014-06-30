@@ -44,6 +44,7 @@ protected:
 	TWeakObjectPtr<AController> MyController;
 
 	/** Projectile data */
+	UPROPERTY(Transient)
 	struct FProjectileWeaponData WeaponConfig;
 
 	/** Did it explode? */
