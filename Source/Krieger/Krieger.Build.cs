@@ -12,7 +12,7 @@ public class Krieger : ModuleRules
         PublicDependencyModuleNames.AddRange(
             new string[] {
                 "VaRestPlugin",
-                //"VaQuoleUIPlugin"
+                "VaQuoleUIPlugin"
             });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
