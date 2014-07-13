@@ -17,6 +17,9 @@ AKriegerExplosionEffect::AKriegerExplosionEffect(const class FPostConstructIniti
 	ExplosionLight->bVisible = true;
 
 	ExplosionLightFadeOut = 0.2f;
+
+	// Don't miss to set root component
+	RootComponent = ExplosionLight;
 }
 
 void AKriegerExplosionEffect::BeginPlay()
