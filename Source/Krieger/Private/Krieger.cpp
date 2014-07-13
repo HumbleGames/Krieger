@@ -1,7 +1,6 @@
 // Copyright 2014 Vladimir Alyamkin. All Rights Reserved.
 
 #include "Krieger.h"
-#include "Krieger.generated.inl"
 
 class FKriegerGameModule : public FDefaultGameModuleImpl
 {
