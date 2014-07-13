@@ -17,3 +17,6 @@ class FKriegerGameModule : public FDefaultGameModuleImpl
 };
 
 IMPLEMENT_PRIMARY_GAME_MODULE(FKriegerGameModule, Krieger, "Krieger");
+
+DEFINE_LOG_CATEGORY(LogKrieger)
+DEFINE_LOG_CATEGORY(LogWeapon)
