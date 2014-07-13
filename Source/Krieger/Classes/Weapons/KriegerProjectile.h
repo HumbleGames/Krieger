@@ -16,7 +16,7 @@ class AKriegerProjectile : public AActor
 
 	/** Apply weapon config */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon|Projectile")
-	void SetWeaponConfig(FProjectileWeaponData& Data);
+	void SetWeaponConfig(const FProjectileWeaponData& Data);
 
 	/** Handle hit */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon|Projectile")

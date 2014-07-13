@@ -54,7 +54,7 @@ void AKriegerProjectile::InitVelocity(FVector ShootDirection)
 	}
 }
 
-void AKriegerProjectile::SetWeaponConfig(FProjectileWeaponData& Data)
+void AKriegerProjectile::SetWeaponConfig(const FProjectileWeaponData& Data)
 {
 	WeaponConfig = Data;
 
