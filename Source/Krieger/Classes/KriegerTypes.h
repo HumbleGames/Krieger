@@ -97,3 +97,74 @@ struct FProjectileWeaponData
 		DamageType = UDamageType::StaticClass();
 	}
 };
+
+USTRUCT(BlueprintType)
+struct FInstantHitInfo
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+	FVector Origin;
+
+	UPROPERTY()
+	float ReticleSpread;
+
+	UPROPERTY()
+	int32 RandomSeed;
+};
+
+USTRUCT(BlueprintType)
+struct FInstantWeaponData
+{
+	GENERATED_USTRUCT_BODY()
+
+	/** Base weapon spread (degrees) */
+	UPROPERTY(EditDefaultsOnly, Category=Accuracy)
+	float WeaponSpread;
+
+	/** Targeting spread modifier */
+	UPROPERTY(EditDefaultsOnly, Category=Accuracy)
+	float TargetingSpreadMod;
+
+	/** Continuous firing: spread increment */
+	UPROPERTY(EditDefaultsOnly, Category=Accuracy)
+	float FiringSpreadIncrement;
+
+	/** Continuous firing: max increment */
+	UPROPERTY(EditDefaultsOnly, Category=Accuracy)
+	float FiringSpreadMax;
+
+	/** Weapon range */
+	UPROPERTY(EditDefaultsOnly, Category=WeaponStat)
+	float WeaponRange;
+
+	/** Damage amount */
+	UPROPERTY(EditDefaultsOnly, Category=WeaponStat)
+	int32 HitDamage;
+
+	/** Type of damage */
+	UPROPERTY(EditDefaultsOnly, Category=WeaponStat)
+	TSubclassOf<UDamageType> DamageType;
+
+	/** Hit verification: scale for bounding box of hit actor */
+	UPROPERTY(EditDefaultsOnly, Category=HitVerification)
+	float ClientSideHitLeeway;
+
+	/** Hit verification: threshold for dot product between view direction and hit direction */
+	UPROPERTY(EditDefaultsOnly, Category=HitVerification)
+	float AllowedViewDotHitDir;
+
+	/** Defaults */
+	FInstantWeaponData()
+	{
+		WeaponSpread = 5.0f;
+		TargetingSpreadMod = 0.25f;
+		FiringSpreadIncrement = 1.0f;
+		FiringSpreadMax = 10.0f;
+		WeaponRange = 10000.0f;
+		HitDamage = 10;
+		DamageType = UDamageType::StaticClass();
+		ClientSideHitLeeway = 200.0f;
+		AllowedViewDotHitDir = 0.8f;
+	}
+};

@@ -44,6 +44,9 @@ AKriegerWeapon::AKriegerWeapon(const class FPostConstructInitializeProperties& P
 	InitialClips = 4;
 	TimeBetweenShots = 0.2f;
 	NoAnimReloadDuration = 1.0f;
+
+	// Instant hit weapon config
+	CurrentFiringSpread = 0.0f;
 }
 
 void AKriegerWeapon::PostInitializeComponents()
@@ -293,6 +296,27 @@ bool AKriegerWeapon::CanReload() const
 //////////////////////////////////////////////////////////////////////////
 // Weapon usage
 
+void AKriegerWeapon::FireWeapon()
+{
+	if (WeaponType == EWeaponType::InstantHit)
+	{
+		/*const int32 RandomSeed = FMath::Rand();
+		FRandomStream WeaponRandomStream(RandomSeed);
+		const float CurrentSpread = GetCurrentSpread();
+		const float ConeHalfAngle = FMath::DegreesToRadians(CurrentSpread * 0.5f);
+
+		const FVector AimDir = GetAdjustedAim();
+		const FVector StartTrace = GetCameraDamageStartLocation(AimDir);
+		const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, ConeHalfAngle, ConeHalfAngle);
+		const FVector EndTrace = StartTrace + ShootDir * InstantConfig.WeaponRange;
+
+		const FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
+		ProcessInstantHit(Impact, StartTrace, ShootDir, RandomSeed, CurrentSpread);
+
+		CurrentFiringSpread = FMath::Min(InstantConfig.FiringSpreadMax, CurrentFiringSpread + InstantConfig.FiringSpreadIncrement);*/
+	}
+}
+
 void AKriegerWeapon::GiveAmmo(int32 AddAmount)
 {
 	const int32 MissingAmmo = FMath::Max(0, MaxAmmo - CurrentAmmo);
@@ -505,6 +529,17 @@ void AKriegerWeapon::OnBurstFinished()
 	
 	GetWorldTimerManager().ClearTimer(this, &AKriegerWeapon::HandleFiring);
 	bRefiring = false;
+
+	// Weapon type related stuff
+	switch (WeaponType)
+	{
+	case EWeaponType::InstantHit:
+		CurrentFiringSpread = 0.0f;
+		break;
+
+	default:
+		break;
+	}
 }
 
 
@@ -552,6 +587,21 @@ FVector AKriegerWeapon::GetMuzzleDirection() const
 {
 	USkeletalMeshComponent* UseMesh = GetWeaponMesh();
 	return UseMesh->GetSocketRotation(MuzzleAttachPoint).Vector();
+}
+
+FHitResult AKriegerWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const
+{
+	static FName WeaponFireTag = FName(TEXT("WeaponTrace"));
+
+	// Perform trace to retrieve hit info
+	FCollisionQueryParams TraceParams(WeaponFireTag, true, Instigator);
+	TraceParams.bTraceAsyncScene = true;
+	TraceParams.bReturnPhysicalMaterial = true;
+
+	FHitResult Hit(ForceInit);
+	GetWorld()->LineTraceSingle(Hit, StartTrace, EndTrace, COLLISION_WEAPON, TraceParams);
+
+	return Hit;
 }
 
 void AKriegerWeapon::SetOwningPawn(AKriegerCharacter* NewOwner)
@@ -695,6 +745,9 @@ void AKriegerWeapon::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & O
 
 	DOREPLIFETIME_CONDITION( AKriegerWeapon, BurstCounter,		COND_SkipOwner );
 	DOREPLIFETIME_CONDITION( AKriegerWeapon, bPendingReload,	COND_SkipOwner );
+
+	// Instant hit weapon
+	DOREPLIFETIME_CONDITION(AKriegerWeapon, HitNotify, COND_SkipOwner);
 }
 
 USkeletalMeshComponent* AKriegerWeapon::GetWeaponMesh() const
@@ -762,4 +815,280 @@ float AKriegerWeapon::GetEquipStartedTime() const
 float AKriegerWeapon::GetEquipDuration() const
 {
 	return EquipDuration;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// INSTANT HIT WEAPON
+//////////////////////////////////////////////////////////////////////////
+
+bool AKriegerWeapon::ServerNotifyHit_Validate(const FHitResult Impact, FVector_NetQuantizeNormal ShootDir, int32 RandomSeed, float ReticleSpread)
+{
+	return true;
+}
+
+void AKriegerWeapon::ServerNotifyHit_Implementation(const FHitResult Impact, FVector_NetQuantizeNormal ShootDir, int32 RandomSeed, float ReticleSpread)
+{
+	const float WeaponAngleDot = FMath::Abs(FMath::Sin(ReticleSpread * PI / 180.f));
+
+	// if we have an instigator, calculate dot between the view and the shot
+	if (Instigator && (Impact.GetActor() || Impact.bBlockingHit))
+	{
+		const FVector Origin = GetMuzzleLocation();
+		const FVector ViewDir = (Impact.Location - Origin).SafeNormal();
+
+		// is the angle between the hit and the view within allowed limits (limit + weapon max angle)
+		const float ViewDotHitDir = FVector::DotProduct(Instigator->GetViewRotation().Vector(), ViewDir);
+		if (ViewDotHitDir > InstantConfig.AllowedViewDotHitDir - WeaponAngleDot)
+		{
+			if (CurrentState != EWeaponState::Idle)
+			{
+				if (Impact.GetActor() == NULL)
+				{
+					if (Impact.bBlockingHit)
+					{
+						ProcessInstantHit_Confirmed(Impact, Origin, ShootDir, RandomSeed, ReticleSpread);
+					}
+				}
+				// assume it told the truth about static things because the don't move and the hit 
+				// usually doesn't have significant gameplay implications
+				else if (Impact.GetActor()->IsRootComponentStatic() || Impact.GetActor()->IsRootComponentStationary())
+				{
+					ProcessInstantHit_Confirmed(Impact, Origin, ShootDir, RandomSeed, ReticleSpread);
+				}
+				else
+				{
+					// Get the component bounding box
+					const FBox HitBox = Impact.GetActor()->GetComponentsBoundingBox();
+
+					// calculate the box extent, and increase by a leeway
+					FVector BoxExtent = 0.5 * (HitBox.Max - HitBox.Min);
+					BoxExtent *= InstantConfig.ClientSideHitLeeway;
+
+					// avoid precision errors with really thin objects
+					BoxExtent.X = FMath::Max(20.0f, BoxExtent.X);
+					BoxExtent.Y = FMath::Max(20.0f, BoxExtent.Y);
+					BoxExtent.Z = FMath::Max(20.0f, BoxExtent.Z);
+
+					// Get the box center
+					const FVector BoxCenter = (HitBox.Min + HitBox.Max) * 0.5;
+
+					// if we are within client tolerance
+					if (FMath::Abs(Impact.Location.Z - BoxCenter.Z) < BoxExtent.Z &&
+						FMath::Abs(Impact.Location.X - BoxCenter.X) < BoxExtent.X &&
+						FMath::Abs(Impact.Location.Y - BoxCenter.Y) < BoxExtent.Y)
+					{
+						ProcessInstantHit_Confirmed(Impact, Origin, ShootDir, RandomSeed, ReticleSpread);
+					}
+					else
+					{
+						UE_LOG(LogWeapon, Log, TEXT("%s Rejected client side hit of %s (outside bounding box tolerance)"), *GetNameSafe(this), *GetNameSafe(Impact.GetActor()));
+					}
+				}
+			}
+		}
+		else if (ViewDotHitDir <= InstantConfig.AllowedViewDotHitDir)
+		{
+			UE_LOG(LogWeapon, Log, TEXT("%s Rejected client side hit of %s (facing too far from the hit direction)"), *GetNameSafe(this), *GetNameSafe(Impact.GetActor()));
+		}
+		else
+		{
+			UE_LOG(LogWeapon, Log, TEXT("%s Rejected client side hit of %s"), *GetNameSafe(this), *GetNameSafe(Impact.GetActor()));
+		}
+	}
+}
+
+bool AKriegerWeapon::ServerNotifyMiss_Validate(FVector_NetQuantizeNormal ShootDir, int32 RandomSeed, float ReticleSpread)
+{
+	return true;
+}
+
+void AKriegerWeapon::ServerNotifyMiss_Implementation(FVector_NetQuantizeNormal ShootDir, int32 RandomSeed, float ReticleSpread)
+{
+	const FVector Origin = GetMuzzleLocation();
+
+	// play FX on remote clients
+	HitNotify.Origin = Origin;
+	HitNotify.RandomSeed = RandomSeed;
+	HitNotify.ReticleSpread = ReticleSpread;
+
+	// play FX locally
+	if (GetNetMode() != NM_DedicatedServer)
+	{
+		const FVector EndTrace = Origin + ShootDir * InstantConfig.WeaponRange;
+		SpawnTrailEffect(EndTrace);
+	}
+}
+
+void AKriegerWeapon::ProcessInstantHit(const FHitResult& Impact, const FVector& Origin, const FVector& ShootDir, int32 RandomSeed, float ReticleSpread)
+{
+	if (MyPawn && MyPawn->IsLocallyControlled() && GetNetMode() == NM_Client)
+	{
+		// if we're a client and we've hit something that is being controlled by the server
+		if (Impact.GetActor() && Impact.GetActor()->GetRemoteRole() == ROLE_Authority)
+		{
+			// notify the server of the hit
+			ServerNotifyHit(Impact, ShootDir, RandomSeed, ReticleSpread);
+		}
+		else if (Impact.GetActor() == NULL)
+		{
+			if (Impact.bBlockingHit)
+			{
+				// notify the server of the hit
+				ServerNotifyHit(Impact, ShootDir, RandomSeed, ReticleSpread);
+			}
+			else
+			{
+				// notify server of the miss
+				ServerNotifyMiss(ShootDir, RandomSeed, ReticleSpread);
+			}
+		}
+	}
+
+	// process a confirmed hit
+	ProcessInstantHit_Confirmed(Impact, Origin, ShootDir, RandomSeed, ReticleSpread);
+}
+
+void AKriegerWeapon::ProcessInstantHit_Confirmed(const FHitResult& Impact, const FVector& Origin, const FVector& ShootDir, int32 RandomSeed, float ReticleSpread)
+{
+	// handle damage
+	if (ShouldDealDamage(Impact.GetActor()))
+	{
+		DealDamage(Impact, ShootDir);
+	}
+
+	// play FX on remote clients
+	if (Role == ROLE_Authority)
+	{
+		HitNotify.Origin = Origin;
+		HitNotify.RandomSeed = RandomSeed;
+		HitNotify.ReticleSpread = ReticleSpread;
+	}
+
+	// play FX locally
+	if (GetNetMode() != NM_DedicatedServer)
+	{
+		const FVector EndTrace = Origin + ShootDir * InstantConfig.WeaponRange;
+		const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
+
+		SpawnTrailEffect(EndPoint);
+		SpawnImpactEffects(Impact);
+	}
+}
+
+bool AKriegerWeapon::ShouldDealDamage(AActor* TestActor) const
+{
+	// if we're an actor on the server, or the actor's role is authoritative, we should register damage
+	if (TestActor)
+	{
+		if (GetNetMode() != NM_Client ||
+			TestActor->Role == ROLE_Authority ||
+			TestActor->bTearOff)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void AKriegerWeapon::DealDamage(const FHitResult& Impact, const FVector& ShootDir)
+{
+	FPointDamageEvent PointDmg;
+	PointDmg.DamageTypeClass = InstantConfig.DamageType;
+	PointDmg.HitInfo = Impact;
+	PointDmg.ShotDirection = ShootDir;
+	PointDmg.Damage = InstantConfig.HitDamage;
+
+	Impact.GetActor()->TakeDamage(PointDmg.Damage, PointDmg, MyPawn->Controller, this);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Weapon usage helpers
+
+float AKriegerWeapon::GetCurrentSpread() const
+{
+	float FinalSpread = InstantConfig.WeaponSpread + CurrentFiringSpread;
+
+	// @TODO Walk/run and Targeting modificator
+	/*if (MyPawn && MyPawn->IsTargeting())
+	{
+		FinalSpread *= InstantConfig.TargetingSpreadMod;
+	}*/
+
+	return FinalSpread;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Replication & effects
+
+void AKriegerWeapon::OnRep_HitNotify()
+{
+	SimulateInstantHit(HitNotify.Origin, HitNotify.RandomSeed, HitNotify.ReticleSpread);
+}
+
+void AKriegerWeapon::SimulateInstantHit(const FVector& ShotOrigin, int32 RandomSeed, float ReticleSpread)
+{
+	FRandomStream WeaponRandomStream(RandomSeed);
+	const float ConeHalfAngle = FMath::DegreesToRadians(ReticleSpread * 0.5f);
+
+	// @TODO
+
+	/**
+	const FVector StartTrace = ShotOrigin;
+	const FVector AimDir = GetAdjustedAim();
+	const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, ConeHalfAngle, ConeHalfAngle);
+	const FVector EndTrace = StartTrace + ShootDir * InstantConfig.WeaponRange;
+
+	FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
+	if (Impact.bBlockingHit)
+	{
+		SpawnImpactEffects(Impact);
+		SpawnTrailEffect(Impact.ImpactPoint);
+	}
+	else
+	{
+		SpawnTrailEffect(EndTrace);
+	}*/
+}
+
+void AKriegerWeapon::SpawnImpactEffects(const FHitResult& Impact)
+{
+	if (ImpactTemplate && Impact.bBlockingHit)
+	{
+		FHitResult UseImpact = Impact;
+
+		// trace again to find component lost during replication
+		if (!Impact.Component.IsValid())
+		{
+			const FVector StartTrace = Impact.ImpactPoint + Impact.ImpactNormal * 10.0f;
+			const FVector EndTrace = Impact.ImpactPoint - Impact.ImpactNormal * 10.0f;
+			FHitResult Hit = WeaponTrace(StartTrace, EndTrace);
+			UseImpact = Hit;
+		}
+
+		AKriegerImpactEffect* EffectActor = GetWorld()->SpawnActorDeferred<AKriegerImpactEffect>(ImpactTemplate, Impact.ImpactPoint, Impact.ImpactNormal.Rotation());
+		if (EffectActor)
+		{
+			EffectActor->SurfaceHit = UseImpact;
+			UGameplayStatics::FinishSpawningActor(EffectActor, FTransform(Impact.ImpactNormal.Rotation(), Impact.ImpactPoint));
+		}
+	}
+}
+
+void AKriegerWeapon::SpawnTrailEffect(const FVector& EndPoint)
+{
+	if (TrailFX)
+	{
+		const FVector Origin = GetMuzzleLocation();
+
+		UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(this, TrailFX, Origin);
+		if (TrailPSC)
+		{
+			TrailPSC->SetVectorParameter(TrailTargetParam, EndPoint);
+		}
+	}
 }
