@@ -413,6 +413,12 @@ protected:
 	/** [local] Weapon specific fire implementation */
 	virtual void FireWeapon();
 
+	/** [local] Instant hit weapon fire */
+	virtual void FireWeapon_Instant();
+
+	/** [local] Projectile weapon fire */
+	virtual void FireWeapon_Projectile();
+
 	/** [server] Fire & update ammo */
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerHandleFiring();
@@ -463,7 +469,7 @@ protected:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Instant weapon stuff
+	// INSTANT HIT WEAPON
 
 public:
 	/** Get current spread */
@@ -471,11 +477,11 @@ public:
 
 protected:
 	/** Instant weapon config */
-	UPROPERTY(EditDefaultsOnly, Category=InstantImpact)
+	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
 	FInstantWeaponData InstantConfig;
 
 	/** Impact effects */
-	UPROPERTY(EditDefaultsOnly, Category=InstantImpact)
+	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
 	TSubclassOf<class AKriegerImpactEffect> ImpactTemplate;
 
 	/** Smoke trail */
@@ -483,7 +489,7 @@ protected:
 	UParticleSystem* TrailFX;
 
 	/** Param name for beam target in smoke trail */
-	UPROPERTY(EditDefaultsOnly, Category=InstantImpact)
+	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
 	FName TrailTargetParam;
 
 	/** Instant hit notify for replication */
@@ -531,6 +537,24 @@ protected:
 
 	/** Spawn trail effect */
 	void SpawnTrailEffect(const FVector& EndPoint);
+
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// PROJECTILE WEAPON
+
+public:
+	/** Apply config on projectile */
+	void ApplyWeaponConfig(FProjectileWeaponData& Data);
+
+protected:
+	/** Weapon config */
+	UPROPERTY(EditDefaultsOnly, Category=Config)
+	FProjectileWeaponData ProjectileConfig;
+
+	/** Spawn projectile on server */
+	UFUNCTION(reliable, server, WithValidation)
+	void ServerFireProjectile(FVector Origin, FVector_NetQuantizeNormal ShootDir);
 
 };
 

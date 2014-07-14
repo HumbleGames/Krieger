@@ -297,28 +297,95 @@ bool AKriegerWeapon::CanReload() const
 
 
 //////////////////////////////////////////////////////////////////////////
-// Weapon usage
+// Weapon fire
 
 void AKriegerWeapon::FireWeapon()
 {
-	if (WeaponType == EWeaponType::InstantHit)
+	switch (WeaponType)
 	{
-		const int32 RandomSeed = FMath::Rand();
-		FRandomStream WeaponRandomStream(RandomSeed);
-		const float CurrentSpread = GetCurrentSpread();
-		const float ConeHalfAngle = FMath::DegreesToRadians(CurrentSpread * 0.5f);
+	case EWeaponType::InstantHit:
+		FireWeapon_Instant();
+		break;
 
-		const FVector AimDir = GetAdjustedAim();
-		const FVector StartTrace = GetDamageStartLocation();
-		const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, ConeHalfAngle, ConeHalfAngle);
-		const FVector EndTrace = StartTrace + ShootDir * InstantConfig.WeaponRange;
-
-		const FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
-		ProcessInstantHit(Impact, StartTrace, ShootDir, RandomSeed, CurrentSpread);
-
-		CurrentFiringSpread = FMath::Min(InstantConfig.FiringSpreadMax, CurrentFiringSpread + InstantConfig.FiringSpreadIncrement);
+	case EWeaponType::Projectile:
+		FireWeapon_Projectile();
+		break;
 	}
 }
+
+void AKriegerWeapon::FireWeapon_Instant()
+{
+	const int32 RandomSeed = FMath::Rand();
+	FRandomStream WeaponRandomStream(RandomSeed);
+	const float CurrentSpread = GetCurrentSpread();
+	const float ConeHalfAngle = FMath::DegreesToRadians(CurrentSpread * 0.5f);
+
+	const FVector AimDir = GetAdjustedAim();
+	const FVector StartTrace = GetDamageStartLocation();
+	const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, ConeHalfAngle, ConeHalfAngle);
+	const FVector EndTrace = StartTrace + ShootDir * InstantConfig.WeaponRange;
+
+	const FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
+	ProcessInstantHit(Impact, StartTrace, ShootDir, RandomSeed, CurrentSpread);
+
+	CurrentFiringSpread = FMath::Min(InstantConfig.FiringSpreadMax, CurrentFiringSpread + InstantConfig.FiringSpreadIncrement);
+}
+
+void AKriegerWeapon::FireWeapon_Projectile()
+{
+	FVector ShootDir = GetAdjustedAim();
+	FVector Origin = GetMuzzleLocation();
+
+	// trace from origin to check what's under crosshair
+	const float ProjectileAdjustRange = 10000.0f;
+	const FVector StartTrace = GetDamageStartLocation();
+	const FVector EndTrace = StartTrace + ShootDir * ProjectileAdjustRange;
+	FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
+
+	// and adjust directions to hit that actor
+	if (Impact.bBlockingHit)
+	{
+		const FVector AdjustedDir = (Impact.ImpactPoint - Origin).SafeNormal();
+		bool bWeaponPenetration = false;
+
+		const float DirectionDot = FVector::DotProduct(AdjustedDir, ShootDir);
+		if (DirectionDot < 0.0f)
+		{
+			// shooting backwards = weapon is penetrating
+			bWeaponPenetration = true;
+		}
+		else if (DirectionDot < 0.5f)
+		{
+			// check for weapon penetration if angle difference is big enough
+			// raycast along weapon mesh to check if there's blocking hit
+
+			FVector MuzzleStartTrace = Origin - GetMuzzleDirection() * 150.0f;
+			FVector MuzzleEndTrace = Origin;
+			FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace);
+
+			if (MuzzleImpact.bBlockingHit)
+			{
+				bWeaponPenetration = true;
+			}
+		}
+
+		if (bWeaponPenetration)
+		{
+			// spawn at crosshair position
+			Origin = Impact.ImpactPoint - ShootDir * 10.0f;
+		}
+		else
+		{
+			// adjust direction to hit
+			ShootDir = AdjustedDir;
+		}
+	}
+
+	ServerFireProjectile(Origin, ShootDir);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Weapon usage
 
 FVector AKriegerWeapon::GetTargetPoint() const
 {
@@ -1115,4 +1182,33 @@ void AKriegerWeapon::SpawnTrailEffect(const FVector& EndPoint)
 			TrailPSC->SetVectorParameter(TrailTargetParam, EndPoint);
 		}
 	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// PROJECTILE WEAPON
+
+bool AKriegerWeapon::ServerFireProjectile_Validate(FVector Origin, FVector_NetQuantizeNormal ShootDir)
+{
+	return true;
+}
+
+void AKriegerWeapon::ServerFireProjectile_Implementation(FVector Origin, FVector_NetQuantizeNormal ShootDir)
+{
+	FTransform SpawnTM(ShootDir.Rotation(), Origin);
+	AKriegerProjectile* Projectile = Cast<AKriegerProjectile>(UGameplayStatics::BeginSpawningActorFromClass(this, ProjectileConfig.ProjectileClass, SpawnTM));
+	if (Projectile)
+	{
+		Projectile->Instigator = Instigator;
+		Projectile->SetOwner(this);
+		Projectile->InitVelocity(ShootDir);
+
+		UGameplayStatics::FinishSpawningActor(Projectile, SpawnTM);
+	}
+}
+
+void AKriegerWeapon::ApplyWeaponConfig(FProjectileWeaponData& Data)
+{
+	Data = ProjectileConfig;
 }
