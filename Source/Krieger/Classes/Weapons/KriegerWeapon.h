@@ -44,8 +44,12 @@ class AKriegerWeapon : public AActor
 
 protected:
 	/** How weapon nadles fire */
-	UPROPERTY(EditDefaultsOnly, Category = Ammo)
+	UPROPERTY(EditDefaultsOnly, Category = General)
 	TEnumAsByte<EWeaponType::Type> WeaponType;
+
+	/** Name of bone/socket for fire */
+	UPROPERTY(EditDefaultsOnly, Category = General)
+	FName WeaponFirePoint;
 
 	/** Inifite ammo for reloads */
 	UPROPERTY(EditDefaultsOnly, Category=Ammo)
@@ -163,6 +167,19 @@ protected:
 	/** Is fire animation looped? */
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	uint32 bLoopedFireAnim : 1;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Aiming
+
+public:
+	/** Get the point we're targeting too */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
+	FVector GetTargetPoint() const;
+
+	/** Set the point we're targeting too */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
+	void SetTargetPoint(const FVector& TargetLocation);
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -308,6 +325,9 @@ protected:
 	//////////////////////////////////////////////////////////////////////////
 	// Internal data
 
+	/** Weapon target point set by player */
+	FVector TargetPoint;
+
 	/** Is fire animation playing? */
 	uint32 bPlayingFireAnim : 1;
 
@@ -425,6 +445,12 @@ protected:
 	/** Stop playing weapon animations */
 	void StopWeaponAnimation(UAnimMontage* Animation);
 
+	/** Get the aim of the weapon, allowing for adjustments to be made by the weapon */
+	virtual FVector GetAdjustedAim() const;
+
+	/** Get the location to fire weapon */
+	virtual FVector GetDamageStartLocation() const;
+
 	/** Get the muzzle location of the weapon */
 	FVector GetMuzzleLocation() const;
 
@@ -445,19 +471,19 @@ public:
 
 protected:
 	/** Instant weapon config */
-	UPROPERTY(EditDefaultsOnly, Category=Config)
+	UPROPERTY(EditDefaultsOnly, Category=InstantImpact)
 	FInstantWeaponData InstantConfig;
 
 	/** Impact effects */
-	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	UPROPERTY(EditDefaultsOnly, Category=InstantImpact)
 	TSubclassOf<class AKriegerImpactEffect> ImpactTemplate;
 
 	/** Smoke trail */
-	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	UPROPERTY(EditDefaultsOnly, Category=InstantImpact)
 	UParticleSystem* TrailFX;
 
 	/** Param name for beam target in smoke trail */
-	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	UPROPERTY(EditDefaultsOnly, Category=InstantImpact)
 	FName TrailTargetParam;
 
 	/** Instant hit notify for replication */

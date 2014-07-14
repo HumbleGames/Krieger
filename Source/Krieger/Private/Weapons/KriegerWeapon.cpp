@@ -45,6 +45,9 @@ AKriegerWeapon::AKriegerWeapon(const class FPostConstructInitializeProperties& P
 	TimeBetweenShots = 0.2f;
 	NoAnimReloadDuration = 1.0f;
 
+	// General config
+	WeaponFirePoint = TEXT("WeaponFire");
+
 	// Instant hit weapon config
 	CurrentFiringSpread = 0.0f;
 }
@@ -300,21 +303,31 @@ void AKriegerWeapon::FireWeapon()
 {
 	if (WeaponType == EWeaponType::InstantHit)
 	{
-		/*const int32 RandomSeed = FMath::Rand();
+		const int32 RandomSeed = FMath::Rand();
 		FRandomStream WeaponRandomStream(RandomSeed);
 		const float CurrentSpread = GetCurrentSpread();
 		const float ConeHalfAngle = FMath::DegreesToRadians(CurrentSpread * 0.5f);
 
 		const FVector AimDir = GetAdjustedAim();
-		const FVector StartTrace = GetCameraDamageStartLocation(AimDir);
+		const FVector StartTrace = GetDamageStartLocation();
 		const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, ConeHalfAngle, ConeHalfAngle);
 		const FVector EndTrace = StartTrace + ShootDir * InstantConfig.WeaponRange;
 
 		const FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
 		ProcessInstantHit(Impact, StartTrace, ShootDir, RandomSeed, CurrentSpread);
 
-		CurrentFiringSpread = FMath::Min(InstantConfig.FiringSpreadMax, CurrentFiringSpread + InstantConfig.FiringSpreadIncrement);*/
+		CurrentFiringSpread = FMath::Min(InstantConfig.FiringSpreadMax, CurrentFiringSpread + InstantConfig.FiringSpreadIncrement);
 	}
+}
+
+FVector AKriegerWeapon::GetTargetPoint() const
+{
+	return TargetPoint;
+}
+
+void AKriegerWeapon::SetTargetPoint(const FVector& TargetLocation)
+{
+	TargetPoint = TargetLocation;
 }
 
 void AKriegerWeapon::GiveAmmo(int32 AddAmount)
@@ -575,6 +588,20 @@ void AKriegerWeapon::StopWeaponAnimation(UAnimMontage* Animation)
 	{
 		MyPawn->StopAnimMontage(Animation);
 	}
+}
+
+FVector AKriegerWeapon::GetAdjustedAim() const
+{
+	FVector FinalAim = TargetPoint - GetDamageStartLocation();
+	FinalAim.Normalize();
+
+	return FinalAim;
+}
+
+FVector AKriegerWeapon::GetDamageStartLocation() const
+{
+	USkeletalMeshComponent* UseMesh = GetWeaponMesh();
+	return UseMesh->GetSocketLocation(WeaponFirePoint);
 }
 
 FVector AKriegerWeapon::GetMuzzleLocation() const
@@ -1035,9 +1062,6 @@ void AKriegerWeapon::SimulateInstantHit(const FVector& ShotOrigin, int32 RandomS
 	FRandomStream WeaponRandomStream(RandomSeed);
 	const float ConeHalfAngle = FMath::DegreesToRadians(ReticleSpread * 0.5f);
 
-	// @TODO
-
-	/**
 	const FVector StartTrace = ShotOrigin;
 	const FVector AimDir = GetAdjustedAim();
 	const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, ConeHalfAngle, ConeHalfAngle);
@@ -1052,7 +1076,7 @@ void AKriegerWeapon::SimulateInstantHit(const FVector& ShotOrigin, int32 RandomS
 	else
 	{
 		SpawnTrailEffect(EndTrace);
-	}*/
+	}
 }
 
 void AKriegerWeapon::SpawnImpactEffects(const FHitResult& Impact)
