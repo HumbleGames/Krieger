@@ -47,10 +47,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = General)
 	TEnumAsByte<EWeaponType::Type> WeaponType;
 
-	/** Name of bone/socket for fire */
-	UPROPERTY(EditDefaultsOnly, Category = General)
-	FName WeaponFirePoint;
-
 	/** Inifite ammo for reloads */
 	UPROPERTY(EditDefaultsOnly, Category=Ammo)
 	bool bInfiniteAmmo;
@@ -89,7 +85,7 @@ protected:
 	class AKriegerCharacter* MyPawn;
 
 	/** Weapon mesh */
-	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
+	UPROPERTY(VisibleAnywhere, Category=Mesh)
 	TSubobjectPtr<USkeletalMeshComponent> Mesh;
 
 	/** Firing audio (bLoopedFireSound set) */
@@ -209,9 +205,11 @@ public:
 	virtual void OnUnEquip();
 
 	/** [server] Weapon was added to pawn's inventory */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
 	virtual void OnEnterInventory(AKriegerCharacter* NewOwner);
 
 	/** [server] Weapon was removed from pawn's inventory */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
 	virtual void OnLeaveInventory();
 
 	/** Check if it's currently equipped */
@@ -485,7 +483,7 @@ protected:
 	TSubclassOf<class AKriegerImpactEffect> ImpactTemplate;
 
 	/** Smoke trail */
-	UPROPERTY(EditDefaultsOnly, Category=InstantImpact)
+	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
 	UParticleSystem* TrailFX;
 
 	/** Param name for beam target in smoke trail */
@@ -549,7 +547,7 @@ public:
 
 protected:
 	/** Weapon config */
-	UPROPERTY(EditDefaultsOnly, Category=Config)
+	UPROPERTY(EditDefaultsOnly, Category=ProjectileWeapon)
 	FProjectileWeaponData ProjectileConfig;
 
 	/** Spawn projectile on server */

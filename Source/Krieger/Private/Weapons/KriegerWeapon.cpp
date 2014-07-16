@@ -45,9 +45,6 @@ AKriegerWeapon::AKriegerWeapon(const class FPostConstructInitializeProperties& P
 	TimeBetweenShots = 0.2f;
 	NoAnimReloadDuration = 1.0f;
 
-	// General config
-	WeaponFirePoint = TEXT("WeaponFire");
-
 	// Instant hit weapon config
 	CurrentFiringSpread = 0.0f;
 }
@@ -384,6 +381,7 @@ void AKriegerWeapon::FireWeapon_Projectile()
 	ServerFireProjectile(Origin, ShootDir);
 }
 
+
 //////////////////////////////////////////////////////////////////////////
 // Weapon usage
 
@@ -659,16 +657,16 @@ void AKriegerWeapon::StopWeaponAnimation(UAnimMontage* Animation)
 
 FVector AKriegerWeapon::GetAdjustedAim() const
 {
+	UE_LOG(LogWeapon, Warning, TEXT("TargetPoint %s"), *TargetPoint.ToString());
 	FVector FinalAim = TargetPoint - GetDamageStartLocation();
 	FinalAim.Normalize();
 
-	return FinalAim;
+	return GetMuzzleDirection();// FinalAim;
 }
 
 FVector AKriegerWeapon::GetDamageStartLocation() const
 {
-	USkeletalMeshComponent* UseMesh = GetWeaponMesh();
-	return UseMesh->GetSocketLocation(WeaponFirePoint);
+	return GetMuzzleLocation();
 }
 
 FVector AKriegerWeapon::GetMuzzleLocation() const

@@ -57,7 +57,8 @@ void AKriegerProjectile::InitVelocity(FVector ShootDirection)
 {
 	if (MovementComp)
 	{
-		MovementComp->Velocity = ShootDirection * MovementComp->InitialSpeed;
+		// @WTF Why we should remove it? Is velocity relative?
+		//MovementComp->Velocity = ShootDirection * MovementComp->InitialSpeed;
 	}
 }
 
