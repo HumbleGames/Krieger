@@ -657,11 +657,10 @@ void AKriegerWeapon::StopWeaponAnimation(UAnimMontage* Animation)
 
 FVector AKriegerWeapon::GetAdjustedAim() const
 {
-	UE_LOG(LogWeapon, Warning, TEXT("TargetPoint %s"), *TargetPoint.ToString());
 	FVector FinalAim = TargetPoint - GetDamageStartLocation();
 	FinalAim.Normalize();
 
-	return GetMuzzleDirection();// FinalAim;
+	return FinalAim;
 }
 
 FVector AKriegerWeapon::GetDamageStartLocation() const
