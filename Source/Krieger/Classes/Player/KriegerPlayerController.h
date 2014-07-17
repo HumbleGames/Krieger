@@ -14,7 +14,7 @@ class AKriegerPlayerController : public APlayerController
 	GENERATED_UCLASS_BODY()
 
 	/** Initialize the input system from the player settings */
-	virtual void InitInputSystem() OVERRIDE;
+	virtual void InitInputSystem() override;
 
 	/** Local function to change system settings and apply them */
 	UFUNCTION(exec, BlueprintCallable, Category = "Settings")

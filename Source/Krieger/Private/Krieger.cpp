@@ -4,12 +4,12 @@
 
 class FKriegerGameModule : public FDefaultGameModuleImpl
 {
-	virtual void StartupModule() OVERRIDE
+	virtual void StartupModule() override
 	{
 
 	}
 
-	virtual void ShutdownModule() OVERRIDE
+	virtual void ShutdownModule() override
 	{
 
 	}

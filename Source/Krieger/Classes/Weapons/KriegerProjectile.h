@@ -2,13 +2,13 @@
 
 #include "KriegerProjectile.generated.h"
 
-UCLASS(Abstract, Blueprintable, DependsOn=AKriegerWeapon_Projectile)
+UCLASS(Abstract, Blueprintable)
 class AKriegerProjectile : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
 	/** Initial setup */
-	virtual void PostInitializeComponents() OVERRIDE;
+	virtual void PostInitializeComponents() override;
 
 	/** Setup velocity */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon|Projectile")
@@ -62,6 +62,6 @@ protected:
 	void DisableAndDestroy();
 
 	/** Update velocity on client */
-	virtual void PostNetReceiveVelocity(const FVector& NewVelocity) OVERRIDE;
+	virtual void PostNetReceiveVelocity(const FVector& NewVelocity) override;
 
 };

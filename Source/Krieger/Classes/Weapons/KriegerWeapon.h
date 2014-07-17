@@ -33,10 +33,10 @@ class AKriegerWeapon : public AActor
 	GENERATED_UCLASS_BODY()
 
 	/** Initial setup */
-	virtual void PostInitializeComponents() OVERRIDE;
+	virtual void PostInitializeComponents() override;
 	
 	/** Cleanup */
-	virtual void Destroyed() OVERRIDE;
+	virtual void Destroyed() override;
 
 
 	//////////////////////////////////////////////////////////////////////////

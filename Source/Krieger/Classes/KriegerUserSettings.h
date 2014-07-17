@@ -8,7 +8,7 @@ class UKriegerUserSettings : public UGameUserSettings
 	GENERATED_UCLASS_BODY()
 
 	/** Applies all current user settings to the game and saves to permanent storage (e.g. file). */
-	virtual void ApplySettings() OVERRIDE;
+	virtual void ApplySettings() override;
 
 	int32 GetGraphicsQuality() const
 	{
@@ -24,7 +24,7 @@ class UKriegerUserSettings : public UGameUserSettings
 	EWindowMode::Type GetCurrentFullscreenMode() const;
 
 	/** Interface UGameUserSettings */
-	virtual void SetToDefaults() OVERRIDE;
+	virtual void SetToDefaults() override;
 
 	/** Changes to CUSTOM low quality graphics */
 	void SetLowQuality();

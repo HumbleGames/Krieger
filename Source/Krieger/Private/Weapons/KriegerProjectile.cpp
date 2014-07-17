@@ -43,7 +43,7 @@ void AKriegerProjectile::PostInitializeComponents()
 	MovementComp->OnProjectileStop.AddDynamic(this, &AKriegerProjectile::OnImpact);
 	CollisionComp->MoveIgnoreActors.Add(Instigator);
 
-	// Override config from weapon
+	// override config from weapon
 	AKriegerWeapon* OwnerWeapon = Cast<AKriegerWeapon>(GetOwner());
 	if (OwnerWeapon)
 	{

@@ -5,6 +5,9 @@
 #include "Engine.h"
 #include "Net/UnrealNetwork.h"
 
+#include "ParticleDefinitions.h"
+#include "Particles/ParticleSystemComponent.h"
+
 #include "KriegerClasses.h"
 
 /** When you modify this, please note that this information can be saved with instances
