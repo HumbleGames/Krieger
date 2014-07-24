@@ -34,7 +34,7 @@ namespace EKriegerPhysMaterialType
 /**
  * Decal config for effects
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FDecalData
 {
 	GENERATED_USTRUCT_BODY()
