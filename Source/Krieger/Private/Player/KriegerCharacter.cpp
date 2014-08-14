@@ -127,37 +127,37 @@ void AKriegerCharacter::DestroyInventory()
 //////////////////////////////////////////////////////////////////////////
 // Weapon usage
 
-void AKriegerCharacter::StartFire()
+void AKriegerCharacter::StartFire(int32 WeaponIdx)
 {
 	if (!bWantsToFire)
 	{
 		bWantsToFire = true;
 		
-		StartWeaponFire();
+		StartWeaponFire(WeaponIdx);
 	}
 }
 
-void AKriegerCharacter::StopFire()
+void AKriegerCharacter::StopFire(int32 WeaponIdx)
 {
 	if (bWantsToFire)
 	{
 		bWantsToFire = false;
 		
-		StopWeaponFire();
+		StopWeaponFire(WeaponIdx);
 	}
 }
 
-bool AKriegerCharacter::CanFire() const
+bool AKriegerCharacter::CanFire(int32 WeaponIdx) const
 {
 	return IsAlive();
 }
 
-bool AKriegerCharacter::CanReload() const
+bool AKriegerCharacter::CanReload(int32 WeaponIdx) const
 {
 	return true;
 }
 
-bool AKriegerCharacter::IsFiring() const
+bool AKriegerCharacter::IsFiring(int32 WeaponIdx) const
 {
 	return bWantsToFire;
 };

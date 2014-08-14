@@ -58,10 +58,10 @@ protected:
 protected:
 
 	/** [server] Spawns default inventory */
-	void SpawnDefaultInventory();
+	virtual void SpawnDefaultInventory();
 
 	/** [server] Remove all weapons from inventory and destroy them */
-	void DestroyInventory();
+	virtual void DestroyInventory();
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -70,29 +70,29 @@ protected:
 public:
 	/** [local] starts weapon fire */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
-	void StartFire();
+	void StartFire(int32 WeaponIdx = 0);
 
 	/** [local] stops weapon fire */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
-	void StopFire();
+	void StopFire(int32 WeaponIdx = 0);
 
 protected:
 	/** [local] Character specific fire implementation */
-	virtual void StartWeaponFire() PURE_VIRTUAL(AKriegerCharacter::StartWeaponFire, );
-	virtual void StopWeaponFire() PURE_VIRTUAL(AKriegerCharacter::StopWeaponFire, );
+	virtual void StartWeaponFire(int32 WeaponIdx) PURE_VIRTUAL(AKriegerCharacter::StartWeaponFire, );
+	virtual void StopWeaponFire(int32 WeaponIdx) PURE_VIRTUAL(AKriegerCharacter::StopWeaponFire, );
 
 public:
 	/** Check if pawn can fire weapon */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
-	bool CanFire() const;
+	bool CanFire(int32 WeaponIdx = 0) const;
 
 	/** Check if pawn can reload weapon */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
-	bool CanReload() const;
+	bool CanReload(int32 WeaponIdx = 0) const;
 
 	/** Get firing state */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
-	bool IsFiring() const;
+	bool IsFiring(int32 WeaponIdx = 0) const;
 
 protected:
 	/** Current firing state */
