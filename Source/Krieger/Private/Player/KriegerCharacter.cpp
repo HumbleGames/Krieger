@@ -3,7 +3,7 @@
 #include "Krieger.h"
 
 AKriegerCharacter::AKriegerCharacter(const class FPostConstructInitializeProperties& PCIP) 
-	: Super(PCIP)
+	: Super(PCIP.SetDefaultSubobjectClass<UKriegerCharacterMovement>(ACharacter::CharacterMovementComponentName))
 {
 	Health = 100;
 	MaxHealth = 100;
