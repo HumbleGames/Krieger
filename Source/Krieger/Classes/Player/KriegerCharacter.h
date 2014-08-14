@@ -68,6 +68,20 @@ protected:
 	// Weapon usage
 
 public:
+	/** [local] starts weapon fire */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
+	void StartFire();
+
+	/** [local] stops weapon fire */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
+	void StopFire();
+
+protected:
+	/** [local] Character specific fire implementation */
+	virtual void StartWeaponFire() PURE_VIRTUAL(AKriegerCharacter::StartWeaponFire, );
+	virtual void StopWeaponFire() PURE_VIRTUAL(AKriegerCharacter::StopWeaponFire, );
+
+public:
 	/** Check if pawn can fire weapon */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
 	bool CanFire() const;
@@ -75,6 +89,14 @@ public:
 	/** Check if pawn can reload weapon */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
 	bool CanReload() const;
+
+	/** Get firing state */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
+	bool IsFiring() const;
+
+protected:
+	/** Current firing state */
+	uint8 bWantsToFire : 1;
 
 
 	//////////////////////////////////////////////////////////////////////////

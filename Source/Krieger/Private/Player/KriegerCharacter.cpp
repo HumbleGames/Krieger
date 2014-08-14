@@ -127,6 +127,26 @@ void AKriegerCharacter::DestroyInventory()
 //////////////////////////////////////////////////////////////////////////
 // Weapon usage
 
+void AKriegerCharacter::StartFire()
+{
+	if (!bWantsToFire)
+	{
+		bWantsToFire = true;
+		
+		StartWeaponFire();
+	}
+}
+
+void AKriegerCharacter::StopFire()
+{
+	if (bWantsToFire)
+	{
+		bWantsToFire = false;
+		
+		StopWeaponFire();
+	}
+}
+
 bool AKriegerCharacter::CanFire() const
 {
 	return IsAlive();
@@ -136,6 +156,11 @@ bool AKriegerCharacter::CanReload() const
 {
 	return true;
 }
+
+bool AKriegerCharacter::IsFiring() const
+{
+	return bWantsToFire;
+};
 
 
 //////////////////////////////////////////////////////////////////////////
