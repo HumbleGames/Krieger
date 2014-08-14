@@ -7,6 +7,19 @@ class AKriegerCharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 
+	/** Spawn inventory, setup initial variables */
+	virtual void PostInitializeComponents() override;
+
+	/** Cleanup inventory */
+	virtual void Destroyed() override;
+
+	/** [server] Perform PlayerState related setup */
+	virtual void PossessedBy(class AController* C) override;
+
+	/** [client] Perform PlayerState related setup */
+	virtual void OnRep_PlayerState() override;
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Health
 
@@ -41,6 +54,17 @@ protected:
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Inventory
+protected:
+
+	/** [server] Spawns default inventory */
+	void SpawnDefaultInventory();
+
+	/** [server] Remove all weapons from inventory and destroy them */
+	void DestroyInventory();
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Weapon usage
 
 public:
@@ -51,6 +75,44 @@ public:
 	/** Check if pawn can reload weapon */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
 	bool CanReload() const;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Meshes
+
+public:
+	/** Update the team color of all player meshes. */
+	void UpdateTeamColorsAllMIDs();
+
+protected:
+	/** Handle mesh colors on specified material instance */
+	void UpdateTeamColors(UMaterialInstanceDynamic* UseMID);
+
+	/** Material instances for setting team color in mesh (3rd person view) */
+	UPROPERTY(Transient)
+	TArray<UMaterialInstanceDynamic*> MeshMIDs;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Effects
+
+protected:
+	/** Effect played on respawn */
+	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	UParticleSystem* RespawnFX;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Sound
+
+protected:
+	/** Sound played on death, local player only */
+	UPROPERTY(EditDefaultsOnly, Category=Pawn)
+	USoundCue* DeathSound;
+
+	/** Sound played on respawn */
+	UPROPERTY(EditDefaultsOnly, Category=Pawn)
+	USoundCue* RespawnSound;
 
 };
 
