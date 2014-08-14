@@ -2,6 +2,8 @@
 
 #include "KriegerCharacter.generated.h"
 
+class AKriegerWeapon;
+
 UCLASS(Abstract, Blueprintable)
 class AKriegerCharacter : public ACharacter
 {
@@ -63,6 +65,10 @@ protected:
 	/** [server] Remove all weapons from inventory and destroy them */
 	virtual void DestroyInventory();
 
+public:
+	/** Get weapon attach point */
+	virtual FName GetWeaponAttachPoint(AKriegerWeapon* Weapon) const PURE_VIRTUAL(AKriegerCharacter::GetWeaponAttachPoint, return TEXT(""););
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Weapon usage
@@ -103,6 +109,9 @@ protected:
 	// Meshes
 
 public:
+	/** Get mesh component */
+	USkeletalMeshComponent* GetPawnMesh() const;
+
 	/** Update the team color of all player meshes. */
 	void UpdateTeamColorsAllMIDs();
 

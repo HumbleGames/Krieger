@@ -26,9 +26,33 @@ void AKriegerMech::SpawnDefaultInventory()
 	SpawnInfo.bNoCollisionFail = true;
 
 	// Spawn and equip default weapons
-	AKriegerWeapon* NewWeapon = GetWorld()->SpawnActor<AKriegerWeapon>(DefaultWeaponRight, SpawnInfo);
-	AddWeapon(NewWeapon);
-	EquipWeapon(&WeaponRight, NewWeapon);
+	if (DefaultWeaponRight != nullptr)
+	{
+		AKriegerWeapon* NewWeapon = GetWorld()->SpawnActor<AKriegerWeapon>(DefaultWeaponRight, SpawnInfo);
+		AddWeapon(NewWeapon);
+		EquipWeapon(&WeaponRight, NewWeapon);
+	}
+
+	if (DefaultWeaponLeft != nullptr)
+	{
+		AKriegerWeapon* NewWeapon = GetWorld()->SpawnActor<AKriegerWeapon>(DefaultWeaponLeft, SpawnInfo);
+		AddWeapon(NewWeapon);
+		EquipWeapon(&WeaponLeft, NewWeapon);
+	}
+
+	if (DefaultWeaponBody != nullptr)
+	{
+		AKriegerWeapon* NewWeapon = GetWorld()->SpawnActor<AKriegerWeapon>(DefaultWeaponBody, SpawnInfo);
+		AddWeapon(NewWeapon);
+		EquipWeapon(&WeaponBody, NewWeapon);
+	}
+
+	if (DefaultWeaponBack != nullptr)
+	{
+		AKriegerWeapon* NewWeapon = GetWorld()->SpawnActor<AKriegerWeapon>(DefaultWeaponBack, SpawnInfo);
+		AddWeapon(NewWeapon);
+		EquipWeapon(&WeaponBack, NewWeapon);
+	}
 }
 
 void AKriegerMech::DestroyInventory()
@@ -52,10 +76,6 @@ void AKriegerMech::DestroyInventory()
 	}
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-// Weapons (Inventory)
-
 void AKriegerMech::AddWeapon(AKriegerWeapon* Weapon)
 {
 	if (Weapon && Role == ROLE_Authority)
@@ -72,6 +92,42 @@ void AKriegerMech::RemoveWeapon(AKriegerWeapon* Weapon)
 		Weapon->OnLeaveInventory();
 		WeaponInventory.RemoveSingle(Weapon);
 	}
+}
+
+FName AKriegerMech::GetWeaponAttachPoint(AKriegerWeapon* Weapon) const
+{
+	if (Weapon == WeaponRight)
+	{
+		return WeaponSocketRight;
+	}
+	else if (Weapon == WeaponLeft)
+	{
+		return WeaponSocketLeft;
+	}
+	else if (Weapon == WeaponBody)
+	{
+		return WeaponSocketBody;
+	}
+	else if (Weapon == WeaponBack)
+	{
+		return WeaponSocketBack;
+	}
+
+	return TEXT("Invalid");
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Weapons (Inventory)
+
+int32 AKriegerMech::GetInventoryCount() const
+{
+	return WeaponInventory.Num();
+}
+
+AKriegerWeapon* AKriegerMech::GetInventoryWeapon(int32 index) const
+{
+	return WeaponInventory[index];
 }
 
 void AKriegerMech::EquipWeapon(AKriegerWeapon** WeaponSlot, AKriegerWeapon* Weapon)

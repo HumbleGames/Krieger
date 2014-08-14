@@ -58,6 +58,8 @@ void AKriegerWeapon::PostInitializeComponents()
 		CurrentAmmoInClip = AmmoPerClip;
 		CurrentAmmo = AmmoPerClip * InitialClips;
 	}
+
+	DetachMeshFromPawn();
 }
 
 void AKriegerWeapon::Destroyed()
@@ -73,6 +75,8 @@ void AKriegerWeapon::Destroyed()
 
 void AKriegerWeapon::OnEquip()
 {
+	AttachMeshToPawn();
+
 	bPendingEquip = true;
 	DetermineWeaponState();
 
@@ -96,6 +100,8 @@ void AKriegerWeapon::OnEquip()
 
 void AKriegerWeapon::OnEquipFinished()
 {
+	AttachMeshToPawn();
+
 	bIsEquipped = true;
 	bPendingEquip = false;
 
@@ -113,6 +119,7 @@ void AKriegerWeapon::OnEquipFinished()
 
 void AKriegerWeapon::OnUnEquip()
 {
+	DetachMeshFromPawn();
 	bIsEquipped = false;
 
 	StopFire();
@@ -153,6 +160,28 @@ void AKriegerWeapon::OnLeaveInventory()
 	{
 		OnUnEquip();
 	}
+}
+
+void AKriegerWeapon::AttachMeshToPawn()
+{
+	if (MyPawn)
+	{
+		// Be sure we removed prevous one result
+		DetachMeshFromPawn();
+
+		// For locally controller players we attach both weapons and let the bOnlyOwnerSee, bOwnerNoSee flags deal with visibility.
+		FName AttachPoint = MyPawn->GetWeaponAttachPoint(this);
+
+		USkeletalMeshComponent* PawnMesh = MyPawn->GetPawnMesh();
+		Mesh->AttachTo(PawnMesh, AttachPoint);
+		Mesh->SetHiddenInGame(false);
+	}
+}
+
+void AKriegerWeapon::DetachMeshFromPawn()
+{
+	Mesh->DetachFromParent();
+	Mesh->SetHiddenInGame(true);
 }
 
 

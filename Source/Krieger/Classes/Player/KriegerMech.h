@@ -26,6 +26,9 @@ protected:
 	/** [server] Remove weapon from inventory and destroy */
 	void RemoveWeapon(AKriegerWeapon* Weapon);
 
+	/** Get weapon attach point */
+	virtual FName GetWeaponAttachPoint(AKriegerWeapon* Weapon) const override;
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Weapons (Inventory)
@@ -70,11 +73,11 @@ protected:
 protected:
 	/** Socket or bone name for attaching weapon mesh (Right arm) */
 	UPROPERTY(EditDefaultsOnly, Category = Weapons)
-	FName WeaponSocketRightArm;
+	FName WeaponSocketRight;
 
 	/** Socket or bone name for attaching weapon mesh (Left arm) */
 	UPROPERTY(EditDefaultsOnly, Category = Weapons)
-	FName WeaponSocketLeftArm;
+	FName WeaponSocketLeft;
 
 	/** Socket or bone name for attaching weapon mesh (Body) */
 	UPROPERTY(EditDefaultsOnly, Category = Weapons)

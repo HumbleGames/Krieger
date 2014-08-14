@@ -166,6 +166,11 @@ bool AKriegerCharacter::IsFiring(int32 WeaponIdx) const
 //////////////////////////////////////////////////////////////////////////
 // Meshes
 
+USkeletalMeshComponent* AKriegerCharacter::GetPawnMesh() const
+{
+	return Mesh;
+}
+
 void AKriegerCharacter::UpdateTeamColors(UMaterialInstanceDynamic* UseMID)
 {
 	if (UseMID)

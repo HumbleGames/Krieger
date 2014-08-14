@@ -222,8 +222,20 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Mesh
+
+protected:
+	/** Attach weapon mesh to pawn's mesh */
+	void AttachMeshToPawn();
+
+	/** Detach weapon mesh from pawn */
+	void DetachMeshFromPawn();
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Input
 
+public:
 	/** [local + server] Start weapon fire */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
 	virtual void StartFire();
