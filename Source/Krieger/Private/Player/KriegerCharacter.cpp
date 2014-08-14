@@ -6,7 +6,12 @@ AKriegerCharacter::AKriegerCharacter(const class FPostConstructInitializePropert
 	: Super(PCIP)
 {
 	Health = 100;
+	MaxHealth = 100;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+// Health
 
 bool AKriegerCharacter::IsAlive() const
 {
@@ -18,9 +23,19 @@ float AKriegerCharacter::GetHealth() const
 	return Health;
 }
 
-int32 AKriegerCharacter::GetMaxHealth() const
+void AKriegerCharacter::SetHealth(float NewHealth)
 {
-	return GetClass()->GetDefaultObject<AKriegerCharacter>()->Health;
+	Health = NewHealth;
+}
+
+float AKriegerCharacter::GetMaxHealth() const
+{
+	return MaxHealth;//GetClass()->GetDefaultObject<AKriegerCharacter>()->Health;
+}
+
+void AKriegerCharacter::SetMaxHealth(float NewMaxHealth)
+{
+	MaxHealth = NewMaxHealth;
 }
 
 
@@ -46,4 +61,5 @@ void AKriegerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > &
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AKriegerCharacter, Health);
+	DOREPLIFETIME(AKriegerCharacter, MaxHealth);
 }
