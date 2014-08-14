@@ -226,7 +226,7 @@ public:
 
 protected:
 	/** Attach weapon mesh to pawn's mesh */
-	void AttachMeshToPawn();
+	virtual void AttachMeshToPawn();
 
 	/** Detach weapon mesh from pawn */
 	void DetachMeshFromPawn();
