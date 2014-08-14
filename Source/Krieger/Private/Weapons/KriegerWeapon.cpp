@@ -173,7 +173,7 @@ void AKriegerWeapon::AttachMeshToPawn()
 		FName AttachPoint = MyPawn->GetWeaponAttachPoint(this);
 
 		USkeletalMeshComponent* PawnMesh = MyPawn->GetPawnMesh();
-		Mesh->AttachTo(PawnMesh, AttachPoint);
+		Mesh->AttachTo(PawnMesh, AttachPoint, EAttachLocation::SnapToTarget);
 		Mesh->SetHiddenInGame(false);
 	}
 }
