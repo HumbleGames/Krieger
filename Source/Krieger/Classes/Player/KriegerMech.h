@@ -68,6 +68,15 @@ protected:
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Weapon usage
+
+protected:
+	/** [local] Character specific fire implementation */
+	virtual void StartWeaponFire(int32 WeaponIdx) override;
+	virtual void StopWeaponFire(int32 WeaponIdx) override;
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Weapons (Data)
 
 protected:

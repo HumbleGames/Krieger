@@ -178,6 +178,60 @@ void AKriegerMech::SetCurrentWeapon(AKriegerWeapon** WeaponSlot, AKriegerWeapon*
 
 
 //////////////////////////////////////////////////////////////////////////
+// Weapon usage
+
+void AKriegerMech::StartWeaponFire(int32 WeaponIdx)
+{
+	switch (WeaponIdx)
+	{
+	case 0:
+		WeaponRight->StartFire();
+		break;
+
+	case 1:
+		WeaponLeft->StartFire();
+		break;
+
+	case 2:
+		WeaponBody->StartFire();
+		break;
+
+	case 3:
+		WeaponBack->StartFire();
+		break;
+
+	default:
+		break;
+	}
+}
+
+void AKriegerMech::StopWeaponFire(int32 WeaponIdx)
+{
+	switch (WeaponIdx)
+	{
+	case 0:
+		WeaponRight->StopFire();
+		break;
+
+	case 1:
+		WeaponLeft->StopFire();
+		break;
+
+	case 2:
+		WeaponBody->StopFire();
+		break;
+
+	case 3:
+		WeaponBack->StopFire();
+		break;
+
+	default:
+		break;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
 // Replication
 
 void AKriegerMech::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
