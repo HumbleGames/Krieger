@@ -164,6 +164,35 @@ bool AKriegerCharacter::IsFiring(int32 WeaponIdx) const
 
 
 //////////////////////////////////////////////////////////////////////////
+// Targeting (Aiming)
+
+FVector AKriegerCharacter::GetTargetPoint() const
+{
+	return TargetPoint;
+}
+
+void AKriegerCharacter::SetTargetPoint(const FVector& TargetLocation)
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerSetTargetPoint(TargetLocation);
+	}
+
+	TargetPoint = TargetLocation;
+}
+
+bool AKriegerCharacter::ServerSetTargetPoint_Validate(const FVector TargetLocation)
+{
+	return true;
+}
+
+void AKriegerCharacter::ServerSetTargetPoint_Implementation(const FVector TargetLocation)
+{
+	SetTargetPoint(TargetLocation);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
 // Meshes
 
 USkeletalMeshComponent* AKriegerCharacter::GetPawnMesh() const
@@ -200,6 +229,10 @@ void AKriegerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > &
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	// Only to local owner: weapon change requests are locally instigated, other clients don't need it
+	DOREPLIFETIME_CONDITION(AKriegerCharacter, TargetPoint, COND_OwnerOnly);
+
+	// Everyone
 	DOREPLIFETIME(AKriegerCharacter, Health);
 	DOREPLIFETIME(AKriegerCharacter, MaxHealth);
 }

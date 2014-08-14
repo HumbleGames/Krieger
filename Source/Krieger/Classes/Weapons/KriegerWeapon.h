@@ -166,19 +166,6 @@ protected:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Aiming
-
-public:
-	/** Get the point we're targeting too */
-	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
-	FVector GetTargetPoint() const;
-
-	/** Set the point we're targeting too */
-	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
-	void SetTargetPoint(const FVector& TargetLocation);
-
-
-	//////////////////////////////////////////////////////////////////////////
 	// Ammo
 
 public:
@@ -335,9 +322,6 @@ protected:
 	//////////////////////////////////////////////////////////////////////////
 	// Internal data
 
-	/** Weapon target point set by player */
-	FVector TargetPoint;
-
 	/** Is fire animation playing? */
 	uint32 bPlayingFireAnim : 1;
 
@@ -460,6 +444,9 @@ protected:
 
 	/** Stop playing weapon animations */
 	void StopWeaponAnimation(UAnimMontage* Animation);
+
+	/** Get the point we're targeting too */
+	virtual FVector GetTargetPoint() const;
 
 	/** Get the aim of the weapon, allowing for adjustments to be made by the weapon */
 	virtual FVector GetAdjustedAim() const;

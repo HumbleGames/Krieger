@@ -106,6 +106,29 @@ protected:
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Targeting (Aiming)
+
+public:
+	/** Get the point we're targeting too */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
+	FVector GetTargetPoint() const;
+
+	/** [local] Set the point we're targeting too */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
+	void SetTargetPoint(const FVector& TargetLocation);
+
+	/** [server] Set the point we're targeting too */
+	UFUNCTION(reliable, server, WithValidation)
+	void ServerSetTargetPoint(const FVector TargetLocation);
+
+
+protected:
+	/** Weapon target point set by player */
+	UPROPERTY(Transient, Replicated)
+	FVector TargetPoint;
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Meshes
 
 public:

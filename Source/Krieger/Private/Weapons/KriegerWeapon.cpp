@@ -414,16 +414,6 @@ void AKriegerWeapon::FireWeapon_Projectile()
 //////////////////////////////////////////////////////////////////////////
 // Weapon usage
 
-FVector AKriegerWeapon::GetTargetPoint() const
-{
-	return TargetPoint;
-}
-
-void AKriegerWeapon::SetTargetPoint(const FVector& TargetLocation)
-{
-	TargetPoint = TargetLocation;
-}
-
 void AKriegerWeapon::GiveAmmo(int32 AddAmount)
 {
 	const int32 MissingAmmo = FMath::Max(0, MaxAmmo - CurrentAmmo);
@@ -684,9 +674,19 @@ void AKriegerWeapon::StopWeaponAnimation(UAnimMontage* Animation)
 	}
 }
 
+FVector AKriegerWeapon::GetTargetPoint() const
+{
+	if (MyPawn)
+	{
+		return MyPawn->GetTargetPoint();
+	}
+
+	return FVector::ZeroVector;
+}
+
 FVector AKriegerWeapon::GetAdjustedAim() const
 {
-	FVector FinalAim = TargetPoint - GetDamageStartLocation();
+	FVector FinalAim = GetTargetPoint() - GetDamageStartLocation();
 	FinalAim.Normalize();
 
 	return FinalAim;
