@@ -120,6 +120,10 @@ FName AKriegerMech::GetWeaponAttachPoint(AKriegerWeapon* Weapon) const
 	{
 		return WeaponSocketBack;
 	}
+	else if (Weapon == Jetpack)
+	{
+		return JetpackSocket;
+	}
 
 	return TEXT("Invalid");
 }
@@ -265,6 +269,11 @@ void AKriegerMech::StopWeaponFire(int32 WeaponIdx)
 
 //////////////////////////////////////////////////////////////////////////
 // Modules (Usage)
+
+AKriegerJetpack* AKriegerMech::GetJetpack()
+{
+	return (Jetpack != NULL) ? Cast<AKriegerJetpack>(Jetpack) : NULL;
+}
 
 void AKriegerMech::ActivateJetpack()
 {

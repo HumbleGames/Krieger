@@ -64,6 +64,10 @@ protected:
 	//////////////////////////////////////////////////////////////////////////
 	// Modules (Usage)
 
+	/** Get Jetpack */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Mech")
+	AKriegerJetpack* GetJetpack();
+
 	/** [local] Start Jetpack "fire" */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Mech")
 	void ActivateJetpack();
@@ -131,7 +135,7 @@ protected:
 
 	/** Socket or bone name for attaching Jetpack mesh */
 	UPROPERTY(EditDefaultsOnly, Category = Modules)
-	FName JetpackSocketBack;
+	FName JetpackSocket;
 
 	/** Default Jetpack */
 	UPROPERTY(EditDefaultsOnly, Category = Modules)
