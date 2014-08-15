@@ -92,7 +92,6 @@ protected:
 	UPROPERTY(Transient)
 	UAudioComponent* FireAC;
 
-
 	/** Weapon barrels */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
 	TArray<FWeaponBarrel> WeaponBarrels;
@@ -100,18 +99,6 @@ protected:
 	/** FX for muzzle flash */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
 	UParticleSystem* MuzzleFX;
-
-	//----------------------------------------------------------------------------------------------
-	/** Name of bone/socket for muzzle in weapon mesh */
-	//UPROPERTY(EditDefaultsOnly, Category=Effects)
-	//FName MuzzleAttachPoint;
-
-	/** Spawned component for muzzle FX */
-	//UPROPERTY(Transient)
-	//UParticleSystemComponent* MuzzlePSC;
-	//----------------------------------------------------------------------------------------------
-
-
 
 	/** Camera shake on firing */
 	UPROPERTY(EditDefaultsOnly, Category=Effects)
