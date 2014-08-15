@@ -3,6 +3,7 @@
 #include "KriegerMech.generated.h"
 
 class AKriegerWeapon;
+class AKriegerJetpack;
 
 UCLASS(Abstract, Blueprintable)
 class AKriegerMech : public AKriegerCharacter
@@ -31,7 +32,7 @@ protected:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Weapons (Inventory)
+	// Weapons (Usage)
 
 	/** Get total number of inventory items */
 	int32 GetInventoryCount() const;
@@ -50,22 +51,6 @@ protected:
 	/** Updates current weapon in slot */
 	void SetCurrentWeapon(AKriegerWeapon** WeaponSlot, AKriegerWeapon* NewWeapon, AKriegerWeapon* LastWeapon = NULL);
 
-	/** Current weapon replication handler (Right arm) */
-	UFUNCTION()
-	void OnRep_WeaponRight(AKriegerWeapon* LastWeapon);
-
-	/** Current weapon replication handler (Left arm) */
-	UFUNCTION()
-	void OnRep_WeaponLeft(AKriegerWeapon* LastWeapon);
-
-	/** Current weapon replication handler (Body) */
-	UFUNCTION()
-	void OnRep_WeaponBody(AKriegerWeapon* LastWeapon);
-
-	/** Current weapon replication handler (Back) */
-	UFUNCTION()
-	void OnRep_WeaponBack(AKriegerWeapon* LastWeapon);
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// Weapon usage
@@ -74,6 +59,18 @@ protected:
 	/** [local] Character specific fire implementation */
 	virtual void StartWeaponFire(int32 WeaponIdx) override;
 	virtual void StopWeaponFire(int32 WeaponIdx) override;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Modules (Usage)
+
+	/** [local] Start Jetpack "fire" */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Mech")
+	void ActivateJetpack();
+
+	/** [local] Stop Jetpack "fire" */
+	UFUNCTION(BlueprintCallable, Category = "Krieger|Mech")
+	void DeactivateJetpack();
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -128,9 +125,55 @@ protected:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_WeaponBack)
 	AKriegerWeapon* WeaponBack;
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Modules
+
+	/** Socket or bone name for attaching Jetpack mesh */
+	UPROPERTY(EditDefaultsOnly, Category = Modules)
+	FName JetpackSocketBack;
+
+	/** Default Jetpack */
+	UPROPERTY(EditDefaultsOnly, Category = Modules)
+	TSubclassOf<AKriegerJetpack> DefaultJetpack;
+
+	/** Currently equipped Jetpack */
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_Jetpack)
+	AKriegerWeapon* Jetpack;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Inventory
+
 	/** All weapons in inventory */
 	UPROPERTY(Transient, Replicated)
 	TArray<AKriegerWeapon*> WeaponInventory;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Replication
+
+protected:
+	/** Current weapon replication handler (Right arm) */
+	UFUNCTION()
+	void OnRep_WeaponRight(AKriegerWeapon* LastWeapon);
+
+	/** Current weapon replication handler (Left arm) */
+	UFUNCTION()
+	void OnRep_WeaponLeft(AKriegerWeapon* LastWeapon);
+
+	/** Current weapon replication handler (Body) */
+	UFUNCTION()
+	void OnRep_WeaponBody(AKriegerWeapon* LastWeapon);
+
+	/** Current weapon replication handler (Back) */
+	UFUNCTION()
+	void OnRep_WeaponBack(AKriegerWeapon* LastWeapon);
+
+	/** Current Jetpack replication handler */
+	UFUNCTION()
+	void OnRep_Jetpack(AKriegerWeapon* LastJetpack);
+
 
 };
 

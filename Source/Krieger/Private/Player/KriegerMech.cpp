@@ -53,6 +53,14 @@ void AKriegerMech::SpawnDefaultInventory()
 		AddWeapon(NewWeapon);
 		EquipWeapon(&WeaponBack, NewWeapon);
 	}
+
+	// Modules
+	if (DefaultJetpack != nullptr)
+	{
+		AKriegerJetpack* NewJetpack = GetWorld()->SpawnActor<AKriegerJetpack>(DefaultJetpack, SpawnInfo);
+		AddWeapon(NewJetpack);
+		EquipWeapon(&Jetpack, NewJetpack);
+	}
 }
 
 void AKriegerMech::DestroyInventory()
@@ -185,19 +193,31 @@ void AKriegerMech::StartWeaponFire(int32 WeaponIdx)
 	switch (WeaponIdx)
 	{
 	case 0:
-		WeaponRight->StartFire();
+		if (WeaponRight != nullptr)
+		{
+			WeaponRight->StartFire();
+		}
 		break;
 
 	case 1:
-		WeaponLeft->StartFire();
+		if (WeaponLeft != nullptr)
+		{
+			WeaponLeft->StartFire();
+		}
 		break;
 
 	case 2:
-		WeaponBody->StartFire();
+		if (WeaponBody != nullptr)
+		{
+			WeaponBody->StartFire();
+		}
 		break;
 
 	case 3:
-		WeaponBack->StartFire();
+		if (WeaponBack != nullptr)
+		{
+			WeaponBack->StartFire();
+		}
 		break;
 
 	default:
@@ -210,23 +230,55 @@ void AKriegerMech::StopWeaponFire(int32 WeaponIdx)
 	switch (WeaponIdx)
 	{
 	case 0:
-		WeaponRight->StopFire();
+		if (WeaponRight != nullptr)
+		{
+			WeaponRight->StopFire();
+		}
 		break;
 
 	case 1:
-		WeaponLeft->StopFire();
+		if (WeaponLeft != nullptr)
+		{
+			WeaponLeft->StopFire();
+		}
 		break;
 
 	case 2:
-		WeaponBody->StopFire();
+		if (WeaponBody != nullptr)
+		{
+			WeaponBody->StopFire();
+		}
 		break;
 
 	case 3:
-		WeaponBack->StopFire();
+		if (WeaponBack != nullptr)
+		{
+			WeaponBack->StopFire();
+		}
 		break;
 
 	default:
 		break;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Modules (Usage)
+
+void AKriegerMech::ActivateJetpack()
+{
+	if (Jetpack != nullptr)
+	{
+		Jetpack->StartFire();
+	}
+}
+
+void AKriegerMech::DeactivateJetpack()
+{
+	if (Jetpack != nullptr)
+	{
+		Jetpack->StopFire();
 	}
 }
 
@@ -246,6 +298,7 @@ void AKriegerMech::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AKriegerMech, WeaponLeft);
 	DOREPLIFETIME(AKriegerMech, WeaponBody);
 	DOREPLIFETIME(AKriegerMech, WeaponBack);
+	DOREPLIFETIME(AKriegerMech, Jetpack);
 }
 
 void AKriegerMech::OnRep_WeaponRight(AKriegerWeapon* LastWeapon)
@@ -266,4 +319,9 @@ void AKriegerMech::OnRep_WeaponBody(AKriegerWeapon* LastWeapon)
 void AKriegerMech::OnRep_WeaponBack(AKriegerWeapon* LastWeapon)
 {
 	SetCurrentWeapon(&WeaponBack, WeaponBack, LastWeapon);
+}
+
+void AKriegerMech::OnRep_Jetpack(AKriegerWeapon* LastJetpack)
+{
+	SetCurrentWeapon(&Jetpack, Jetpack, LastJetpack);
 }
