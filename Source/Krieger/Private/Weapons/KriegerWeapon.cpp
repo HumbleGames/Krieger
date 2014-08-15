@@ -47,6 +47,9 @@ AKriegerWeapon::AKriegerWeapon(const class FPostConstructInitializeProperties& P
 
 	// Instant hit weapon config
 	CurrentFiringSpread = 0.0f;
+
+	// Barrels
+	CurrentBarrel = 0;
 }
 
 void AKriegerWeapon::PostInitializeComponents()
@@ -336,6 +339,13 @@ void AKriegerWeapon::FireWeapon()
 	case EWeaponType::Projectile:
 		FireWeapon_Projectile();
 		break;
+	}
+
+	// Use next barrel
+	CurrentBarrel++;
+	if (CurrentBarrel >= WeaponBarrels.Num())
+	{
+		CurrentBarrel = 0;
 	}
 }
 
@@ -700,13 +710,23 @@ FVector AKriegerWeapon::GetDamageStartLocation() const
 FVector AKriegerWeapon::GetMuzzleLocation() const
 {
 	USkeletalMeshComponent* UseMesh = GetWeaponMesh();
-	return UseMesh->GetSocketLocation(MuzzleAttachPoint);
+	return UseMesh->GetSocketLocation(GetCurrentBarrelSocketName());
 }
 
 FVector AKriegerWeapon::GetMuzzleDirection() const
 {
 	USkeletalMeshComponent* UseMesh = GetWeaponMesh();
-	return UseMesh->GetSocketRotation(MuzzleAttachPoint).Vector();
+	return UseMesh->GetSocketRotation(GetCurrentBarrelSocketName()).Vector();
+}
+
+FName AKriegerWeapon::GetCurrentBarrelSocketName() const
+{
+	if (CurrentBarrel < 0 || CurrentBarrel >= WeaponBarrels.Num())
+	{
+		return TEXT("");
+	}
+
+	return WeaponBarrels[CurrentBarrel].MuzzleAttachPoint;
 }
 
 FHitResult AKriegerWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const
@@ -785,9 +805,25 @@ void AKriegerWeapon::SimulateWeaponFire()
 	if (MuzzleFX)
 	{
 		USkeletalMeshComponent* UseWeaponMesh = GetWeaponMesh();
-		if (!bLoopedMuzzleFX || MuzzlePSC == NULL)
+
+		int32 NumBarrels = WeaponBarrels.Num();
+		for (int32 i = 0; i < NumBarrels; i++)
 		{
-			MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, UseWeaponMesh, MuzzleAttachPoint);
+			if (!bSimultaneousMuzzleFX && i != CurrentBarrel)
+			{
+				if (WeaponBarrels[i].MuzzlePSC != NULL)
+				{
+					WeaponBarrels[i].MuzzlePSC->DeactivateSystem();
+					WeaponBarrels[i].MuzzlePSC = NULL;
+				}
+
+				continue;
+			}
+
+			if (!bLoopedMuzzleFX || WeaponBarrels[i].MuzzlePSC == NULL)
+			{
+				WeaponBarrels[i].MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, UseWeaponMesh, WeaponBarrels[i].MuzzleAttachPoint);
+			}
 		}
 	}
 
@@ -827,15 +863,14 @@ void AKriegerWeapon::StopSimulatingWeaponFire()
 {
 	if (bLoopedMuzzleFX )
 	{
-		if( MuzzlePSC != NULL )
+		int32 NumBarrels = WeaponBarrels.Num();
+		for (int32 i = 0; i < NumBarrels; i++)
 		{
-			MuzzlePSC->DeactivateSystem();
-			MuzzlePSC = NULL;
-		}
-		if( MuzzlePSCSecondary != NULL )
-		{
-			MuzzlePSCSecondary->DeactivateSystem();
-			MuzzlePSCSecondary = NULL;
+			if (WeaponBarrels[i].MuzzlePSC != NULL)
+			{
+				WeaponBarrels[i].MuzzlePSC->DeactivateSystem();
+				WeaponBarrels[i].MuzzlePSC = NULL;
+			}
 		}
 	}
 

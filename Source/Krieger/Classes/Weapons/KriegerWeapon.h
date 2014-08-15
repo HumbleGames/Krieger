@@ -92,21 +92,26 @@ protected:
 	UPROPERTY(Transient)
 	UAudioComponent* FireAC;
 
-	/** Name of bone/socket for muzzle in weapon mesh */
-	UPROPERTY(EditDefaultsOnly, Category=Effects)
-	FName MuzzleAttachPoint;
+
+	/** Weapon barrels */
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	TArray<FWeaponBarrel> WeaponBarrels;
 
 	/** FX for muzzle flash */
-	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
 	UParticleSystem* MuzzleFX;
 
-	/** Spawned component for muzzle FX */
-	UPROPERTY(Transient)
-	UParticleSystemComponent* MuzzlePSC;
+	//----------------------------------------------------------------------------------------------
+	/** Name of bone/socket for muzzle in weapon mesh */
+	//UPROPERTY(EditDefaultsOnly, Category=Effects)
+	//FName MuzzleAttachPoint;
 
-	/** Spawned component for second muzzle FX (Needed for split screen) */
-	UPROPERTY(Transient)
-	UParticleSystemComponent* MuzzlePSCSecondary;
+	/** Spawned component for muzzle FX */
+	//UPROPERTY(Transient)
+	//UParticleSystemComponent* MuzzlePSC;
+	//----------------------------------------------------------------------------------------------
+
+
 
 	/** Camera shake on firing */
 	UPROPERTY(EditDefaultsOnly, Category=Effects)
@@ -155,6 +160,10 @@ protected:
 	/** Is muzzle FX looped? */
 	UPROPERTY(EditDefaultsOnly, Category=Effects)
 	uint32 bLoopedMuzzleFX : 1;
+
+	/** Is muzzle FX played simultaneously? */
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	uint32 bSimultaneousMuzzleFX : 1;
 
 	/** Is fire sound looped? */
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
@@ -365,6 +374,10 @@ protected:
 	UPROPERTY(Transient, ReplicatedUsing=OnRep_BurstCounter)
 	int32 BurstCounter;
 
+	/** Current active barrel */
+	UPROPERTY(Transient, Replicated)
+	int32 CurrentBarrel;
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Input - server side
@@ -459,6 +472,9 @@ protected:
 
 	/** Get direction of weapon's muzzle */
 	FVector GetMuzzleDirection() const;
+
+	/** Get current barrel attach point */
+	FName GetCurrentBarrelSocketName() const;
 
 	/** Find hit */
 	FHitResult WeaponTrace(const FVector& TraceFrom, const FVector& TraceTo) const;

@@ -60,6 +60,30 @@ struct FDecalData
 };
 
 /**
+ * Weapon barrel config
+ */
+USTRUCT(BlueprintType)
+struct FWeaponBarrel
+{
+	GENERATED_USTRUCT_BODY()
+
+	/** Name of bone/socket for muzzle in weapon mesh */
+	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	FName MuzzleAttachPoint;
+
+	/** Spawned component for muzzle FX */
+	UPROPERTY(Transient)
+	UParticleSystemComponent* MuzzlePSC;
+
+	/** Defaults */
+	FWeaponBarrel()
+	{
+		MuzzleAttachPoint = TEXT("");
+		MuzzlePSC = NULL;
+	}
+};
+
+/**
  * Projectile config
  */
 USTRUCT(BlueprintType)
