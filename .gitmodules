@@ -1,3 +1,6 @@
 [submodule "Plugins/VaQuoleUI"]
 	path = Plugins/VaQuoleUI
 	url = git@github.com:ufna/VaQuoleUI.git
+[submodule "Plugins/VaRest"]
+	path = Plugins/VaRest
+	url = git@github.com:ufna/VaRest.git
