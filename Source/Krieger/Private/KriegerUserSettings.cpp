@@ -15,7 +15,7 @@ void UKriegerUserSettings::SetToDefaults()
 	GraphicsQuality = 3;
 }
 
-void UKriegerUserSettings::ApplySettings()
+void UKriegerUserSettings::ApplySettings(bool bCheckForCommandLineOverrides)
 {
 	int LocalGraphicsQuality = FMath::Clamp(GraphicsQuality, 0, 3);
 
@@ -23,7 +23,7 @@ void UKriegerUserSettings::ApplySettings()
 
 	UE_LOG(LogConsoleResponse, Display, TEXT("  GraphicsQuality %d"), LocalGraphicsQuality);
 
-	Super::ApplySettings();
+	Super::ApplySettings(bCheckForCommandLineOverrides);
 }
 
 int32 KriegerGetBoundFullScreenModeCVar()

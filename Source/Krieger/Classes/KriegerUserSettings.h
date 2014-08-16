@@ -7,8 +7,8 @@ class UKriegerUserSettings : public UGameUserSettings
 {
 	GENERATED_UCLASS_BODY()
 
-	/** Applies all current user settings to the game and saves to permanent storage (e.g. file). */
-	virtual void ApplySettings() override;
+	/** Applies all current user settings to the game and saves to permanent storage (e.g. file), optionally checking for command line overrides. */
+	virtual void ApplySettings(bool bCheckForCommandLineOverrides) override;
 
 	int32 GetGraphicsQuality() const
 	{

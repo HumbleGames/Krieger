@@ -15,7 +15,7 @@ void AKriegerPlayerController::InitInputSystem()
 	if (PlayerInput != NULL)
 	{
 		UKriegerUserSettings *UserSettings = CastChecked<UKriegerUserSettings>(GEngine->GetGameUserSettings());
-		UserSettings->ApplySettings();
+		UserSettings->ApplySettings(false);
 	}
 }
 
@@ -25,6 +25,6 @@ void AKriegerPlayerController::SetGraphicsQuality(int32 InGraphicsQuality)
 	{
 		UKriegerUserSettings *UserSettings = CastChecked<UKriegerUserSettings>(GEngine->GetGameUserSettings());
 		UserSettings->SetGraphicsQuality(InGraphicsQuality);
-		UserSettings->ApplySettings();
+		UserSettings->ApplySettings(false);
 	}
 }
