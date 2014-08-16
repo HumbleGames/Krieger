@@ -1,0 +1,3 @@
+[submodule "Plugins/VaQuoleUI"]
+	path = Plugins/VaQuoleUI
+	url = git@github.com:ufna/VaQuoleUI.git
