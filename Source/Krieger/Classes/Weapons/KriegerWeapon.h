@@ -15,16 +15,6 @@ namespace EWeaponState
 	};
 }
 
-UENUM(BlueprintType)
-namespace EWeaponType
-{
-	enum Type
-	{
-		InstantHit,
-		Projectile
-	};
-}
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOutOfAmmo);
 
 UCLASS(Abstract, Blueprintable)
@@ -40,12 +30,16 @@ class AKriegerWeapon : public AActor
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Common weapon config
+	// General config
 
 protected:
-	/** How weapon nadles fire */
+	/** Primary weapon mode */
 	UPROPERTY(EditDefaultsOnly, Category = General)
-	TEnumAsByte<EWeaponType::Type> WeaponType;
+	FWeaponMode PrimaryFireMode;
+
+	/** Secondary weapon mode */
+	UPROPERTY(EditDefaultsOnly, Category = General)
+	FWeaponMode SecondaryFireMode;
 
 	/** Inifite ammo for reloads */
 	UPROPERTY(EditDefaultsOnly, Category=Ammo)
@@ -67,17 +61,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Ammo)
 	int32 InitialClips;
 
-	/** Time between two consecutive shots */
-	UPROPERTY(EditDefaultsOnly, Category=WeaponStat)
-	float TimeBetweenShots;
-
 	/** Failsafe reload duration if weapon doesn't have any animation for it */
 	UPROPERTY(EditDefaultsOnly, Category=WeaponStat)
 	float NoAnimReloadDuration;
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// General config
+	// Visuals
 
 protected:
 	/** Pawn owner */
@@ -87,38 +77,6 @@ protected:
 	/** Weapon mesh */
 	UPROPERTY(VisibleAnywhere, Category=Mesh)
 	TSubobjectPtr<USkeletalMeshComponent> Mesh;
-
-	/** Firing audio (bLoopedFireSound set) */
-	UPROPERTY(Transient)
-	UAudioComponent* FireAC;
-
-	/** Weapon barrels */
-	UPROPERTY(EditDefaultsOnly, Category = Effects)
-	TArray<FWeaponBarrel> WeaponBarrels;
-
-	/** FX for muzzle flash */
-	UPROPERTY(EditDefaultsOnly, Category = Effects)
-	UParticleSystem* MuzzleFX;
-
-	/** Camera shake on firing */
-	UPROPERTY(EditDefaultsOnly, Category=Effects)
-	TSubclassOf<UCameraShake> FireCameraShake;
-
-	/** Force feedback effect to play when the weapon is fired */
-	UPROPERTY(EditDefaultsOnly, Category=Effects)
-	UForceFeedbackEffect *FireForceFeedback;
-
-	/** Single fire sound (bLoopedFireSound not set) */
-	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* FireSound;
-
-	/** Looped fire sound (bLoopedFireSound set) */
-	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* FireLoopSound;
-
-	/** Finished burst sound (bLoopedFireSound set) */
-	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* FireFinishSound;
 
 	/** Out of ammo sound */
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
@@ -139,26 +97,6 @@ protected:
 	/** Equip animations */
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	UAnimMontage* EquipAnim;
-
-	/** Fire animations */
-	UPROPERTY(EditDefaultsOnly, Category=Animation)
-	UAnimMontage* FireAnim;
-
-	/** Is muzzle FX looped? */
-	UPROPERTY(EditDefaultsOnly, Category=Effects)
-	uint32 bLoopedMuzzleFX : 1;
-
-	/** Is muzzle FX played simultaneously? */
-	UPROPERTY(EditDefaultsOnly, Category = Effects)
-	uint32 bSimultaneousMuzzleFX : 1;
-
-	/** Is fire sound looped? */
-	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	uint32 bLoopedFireSound : 1;
-
-	/** Is fire animation looped? */
-	UPROPERTY(EditDefaultsOnly, Category=Animation)
-	uint32 bLoopedFireAnim : 1;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -340,6 +278,12 @@ protected:
 	/** Current weapon state */
 	EWeaponState::Type CurrentState;
 
+	/** Current fire mode */
+	uint32 CurrentFireMode;
+
+	/** Current fire mode */
+	FWeaponMode* CurrentWeaponFireMode;
+
 	/** Time of last successful weapon fire */
 	float LastFireTime;
 
@@ -436,6 +380,9 @@ protected:
 	//////////////////////////////////////////////////////////////////////////
 	// Weapon usage helpers
 
+	/** Get current weapon mode */
+	FWeaponMode* GetCurrentWeaponMode() const;
+
 	/** Play weapon sounds */
 	UAudioComponent* PlayWeaponSound(USoundCue* Sound);
 
@@ -476,22 +423,6 @@ public:
 	float GetCurrentSpread() const;
 
 protected:
-	/** Instant weapon config */
-	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
-	FInstantWeaponData InstantConfig;
-
-	/** Impact effects */
-	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
-	TSubclassOf<class AKriegerImpactEffect> ImpactTemplate;
-
-	/** Smoke trail */
-	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
-	UParticleSystem* TrailFX;
-
-	/** Param name for beam target in smoke trail */
-	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
-	FName TrailTargetParam;
-
 	/** Instant hit notify for replication */
 	UPROPERTY(Transient, ReplicatedUsing=OnRep_HitNotify)
 	FInstantHitInfo HitNotify;
@@ -548,10 +479,6 @@ public:
 	void ApplyWeaponConfig(FProjectileWeaponData& Data);
 
 protected:
-	/** Weapon config */
-	UPROPERTY(EditDefaultsOnly, Category=ProjectileWeapon)
-	FProjectileWeaponData ProjectileConfig;
-
 	/** Spawn projectile on server */
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerFireProjectile(FVector Origin, FVector_NetQuantizeNormal ShootDir);

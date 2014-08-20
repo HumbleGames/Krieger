@@ -16,8 +16,6 @@ AKriegerWeapon::AKriegerWeapon(const class FPostConstructInitializeProperties& P
 	Mesh->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
 	RootComponent = Mesh;
 
-	bLoopedMuzzleFX = false;
-	bLoopedFireAnim = false;
 	bPlayingFireAnim = false;
 	bIsEquipped = false;
 	bWantsToFire = false;
@@ -42,7 +40,7 @@ AKriegerWeapon::AKriegerWeapon(const class FPostConstructInitializeProperties& P
 	MaxAmmo = 100;
 	AmmoPerClip = 20;
 	InitialClips = 4;
-	TimeBetweenShots = 0.2f;
+	
 	NoAnimReloadDuration = 1.0f;
 
 	// Instant hit weapon config
@@ -50,6 +48,8 @@ AKriegerWeapon::AKriegerWeapon(const class FPostConstructInitializeProperties& P
 
 	// Barrels
 	CurrentBarrel = 0;
+	CurrentFireMode = 0;
+	CurrentWeaponFireMode = &PrimaryFireMode;
 }
 
 void AKriegerWeapon::PostInitializeComponents()
@@ -330,7 +330,7 @@ bool AKriegerWeapon::CanReload() const
 
 void AKriegerWeapon::FireWeapon()
 {
-	switch (WeaponType)
+	switch (GetCurrentWeaponMode()->WeaponType)
 	{
 	case EWeaponType::InstantHit:
 		FireWeapon_Instant();
@@ -343,7 +343,7 @@ void AKriegerWeapon::FireWeapon()
 
 	// Use next barrel
 	CurrentBarrel++;
-	if (CurrentBarrel >= WeaponBarrels.Num())
+	if (CurrentBarrel >= GetCurrentWeaponMode()->WeaponBarrels.Num())
 	{
 		CurrentBarrel = 0;
 	}
@@ -359,12 +359,12 @@ void AKriegerWeapon::FireWeapon_Instant()
 	const FVector AimDir = GetAdjustedAim();
 	const FVector StartTrace = GetDamageStartLocation();
 	const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, ConeHalfAngle, ConeHalfAngle);
-	const FVector EndTrace = StartTrace + ShootDir * InstantConfig.WeaponRange;
+	const FVector EndTrace = StartTrace + ShootDir * GetCurrentWeaponMode()->InstantConfig.WeaponRange;
 
 	const FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
 	ProcessInstantHit(Impact, StartTrace, ShootDir, RandomSeed, CurrentSpread);
 
-	CurrentFiringSpread = FMath::Min(InstantConfig.FiringSpreadMax, CurrentFiringSpread + InstantConfig.FiringSpreadIncrement);
+	CurrentFiringSpread = FMath::Min(GetCurrentWeaponMode()->InstantConfig.FiringSpreadMax, CurrentFiringSpread + GetCurrentWeaponMode()->InstantConfig.FiringSpreadIncrement);
 }
 
 void AKriegerWeapon::FireWeapon_Projectile()
@@ -511,10 +511,10 @@ void AKriegerWeapon::HandleFiring()
 		}
 
 		// setup refire timer
-		bRefiring = (CurrentState == EWeaponState::Firing && TimeBetweenShots > 0.0f);
+		bRefiring = (CurrentState == EWeaponState::Firing && GetCurrentWeaponMode()->TimeBetweenBursts > 0.0f);
 		if (bRefiring)
 		{
-			GetWorldTimerManager().SetTimer(this, &AKriegerWeapon::HandleFiring, TimeBetweenShots, false);
+			GetWorldTimerManager().SetTimer(this, &AKriegerWeapon::HandleFiring, GetCurrentWeaponMode()->TimeBetweenBursts, false);
 		}
 	}
 
@@ -613,9 +613,9 @@ void AKriegerWeapon::OnBurstStarted()
 {
 	// start firing, can be delayed to satisfy TimeBetweenShots
 	const float GameTime = GetWorld()->GetTimeSeconds();
-	if (LastFireTime > 0 && TimeBetweenShots > 0.0f && (LastFireTime + TimeBetweenShots) > GameTime)
+	if (LastFireTime > 0 && GetCurrentWeaponMode()->TimeBetweenBursts > 0.0f && (LastFireTime + GetCurrentWeaponMode()->TimeBetweenBursts) > GameTime)
 	{
-		GetWorldTimerManager().SetTimer(this, &AKriegerWeapon::HandleFiring, LastFireTime + TimeBetweenShots - GameTime, false);
+		GetWorldTimerManager().SetTimer(this, &AKriegerWeapon::HandleFiring, LastFireTime + GetCurrentWeaponMode()->TimeBetweenBursts - GameTime, false);
 	}
 	else
 	{
@@ -638,7 +638,7 @@ void AKriegerWeapon::OnBurstFinished()
 	bRefiring = false;
 
 	// Weapon type related stuff
-	switch (WeaponType)
+	switch (GetCurrentWeaponMode()->WeaponType)
 	{
 	case EWeaponType::InstantHit:
 		CurrentFiringSpread = 0.0f;
@@ -721,12 +721,12 @@ FVector AKriegerWeapon::GetMuzzleDirection() const
 
 FName AKriegerWeapon::GetCurrentBarrelSocketName() const
 {
-	if (CurrentBarrel < 0 || CurrentBarrel >= WeaponBarrels.Num())
+	if (CurrentBarrel < 0 || CurrentBarrel >= GetCurrentWeaponMode()->WeaponBarrels.Num())
 	{
 		return TEXT("");
 	}
 
-	return WeaponBarrels[CurrentBarrel].MuzzleAttachPoint;
+	return GetCurrentWeaponMode()->WeaponBarrels[CurrentBarrel].MuzzleAttachPoint;
 }
 
 FHitResult AKriegerWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const
@@ -802,90 +802,90 @@ void AKriegerWeapon::SimulateWeaponFire()
 		return;
 	}
 
-	if (MuzzleFX)
+	if (GetCurrentWeaponMode()->MuzzleFX)
 	{
 		USkeletalMeshComponent* UseWeaponMesh = GetWeaponMesh();
 
-		int32 NumBarrels = WeaponBarrels.Num();
+		int32 NumBarrels = GetCurrentWeaponMode()->WeaponBarrels.Num();
 		for (int32 i = 0; i < NumBarrels; i++)
 		{
-			if (!bSimultaneousMuzzleFX && i != CurrentBarrel)
+			if (!GetCurrentWeaponMode()->bSimultaneousMuzzleFX && i != CurrentBarrel)
 			{
-				if (WeaponBarrels[i].MuzzlePSC != NULL)
+				if (GetCurrentWeaponMode()->WeaponBarrels[i].MuzzlePSC != NULL)
 				{
-					WeaponBarrels[i].MuzzlePSC->DeactivateSystem();
-					WeaponBarrels[i].MuzzlePSC = NULL;
+					GetCurrentWeaponMode()->WeaponBarrels[i].MuzzlePSC->DeactivateSystem();
+					GetCurrentWeaponMode()->WeaponBarrels[i].MuzzlePSC = NULL;
 				}
 
 				continue;
 			}
 
-			if (!bLoopedMuzzleFX || WeaponBarrels[i].MuzzlePSC == NULL)
+			if (!GetCurrentWeaponMode()->bLoopedMuzzleFX || GetCurrentWeaponMode()->WeaponBarrels[i].MuzzlePSC == NULL)
 			{
-				WeaponBarrels[i].MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(MuzzleFX, UseWeaponMesh, WeaponBarrels[i].MuzzleAttachPoint);
+				GetCurrentWeaponMode()->WeaponBarrels[i].MuzzlePSC = UGameplayStatics::SpawnEmitterAttached(GetCurrentWeaponMode()->MuzzleFX, UseWeaponMesh, GetCurrentWeaponMode()->WeaponBarrels[i].MuzzleAttachPoint);
 			}
 		}
 	}
 
-	if (!bLoopedFireAnim || !bPlayingFireAnim)
+	if (!GetCurrentWeaponMode()->bLoopedFireAnim || !bPlayingFireAnim)
 	{
-		PlayWeaponAnimation(FireAnim);
+		PlayWeaponAnimation(GetCurrentWeaponMode()->FireAnim);
 		bPlayingFireAnim = true;
 	}
 
-	if (bLoopedFireSound)
+	if (GetCurrentWeaponMode()->bLoopedFireSound)
 	{
-		if (FireAC == NULL)
+		if (GetCurrentWeaponMode()->FireAC == NULL)
 		{
-			FireAC = PlayWeaponSound(FireLoopSound);
+			GetCurrentWeaponMode()->FireAC = PlayWeaponSound(GetCurrentWeaponMode()->FireLoopSound);
 		}
 	}
 	else
 	{
-		PlayWeaponSound(FireSound);
+		PlayWeaponSound(GetCurrentWeaponMode()->FireSound);
 	}
 
 	AKriegerPlayerController* PC = (MyPawn != NULL) ? Cast<AKriegerPlayerController>(MyPawn->Controller) : NULL;
 	if (PC != NULL && PC->IsLocalController())
 	{
-		if (FireCameraShake != NULL)
+		if (GetCurrentWeaponMode()->FireCameraShake != NULL)
 		{
-			PC->ClientPlayCameraShake(FireCameraShake, 1);
+			PC->ClientPlayCameraShake(GetCurrentWeaponMode()->FireCameraShake, 1);
 		}
-		if (FireForceFeedback != NULL)
+		if (GetCurrentWeaponMode()->FireForceFeedback != NULL)
 		{
-			PC->ClientPlayForceFeedback(FireForceFeedback, false, "Weapon");
+			PC->ClientPlayForceFeedback(GetCurrentWeaponMode()->FireForceFeedback, false, "Weapon");
 		}
 	}
 }
 
 void AKriegerWeapon::StopSimulatingWeaponFire()
 {
-	if (bLoopedMuzzleFX )
+	if (GetCurrentWeaponMode()->bLoopedMuzzleFX)
 	{
-		int32 NumBarrels = WeaponBarrels.Num();
+		int32 NumBarrels = GetCurrentWeaponMode()->WeaponBarrels.Num();
 		for (int32 i = 0; i < NumBarrels; i++)
 		{
-			if (WeaponBarrels[i].MuzzlePSC != NULL)
+			if (GetCurrentWeaponMode()->WeaponBarrels[i].MuzzlePSC != NULL)
 			{
-				WeaponBarrels[i].MuzzlePSC->DeactivateSystem();
-				WeaponBarrels[i].MuzzlePSC = NULL;
+				GetCurrentWeaponMode()->WeaponBarrels[i].MuzzlePSC->DeactivateSystem();
+				GetCurrentWeaponMode()->WeaponBarrels[i].MuzzlePSC = NULL;
 			}
 		}
 	}
 
-	if (bLoopedFireAnim && bPlayingFireAnim)
+	if (GetCurrentWeaponMode()->bLoopedFireAnim && bPlayingFireAnim)
 	{
-		StopWeaponAnimation(FireAnim);
+		StopWeaponAnimation(GetCurrentWeaponMode()->FireAnim);
 		bPlayingFireAnim = false;
 	}
 
-	if (FireAC)
+	if (GetCurrentWeaponMode()->FireAC)
 	{
-		FireAC->FadeOut(0.1f, 0.0f);
-		FireAC = NULL;
+		GetCurrentWeaponMode()->FireAC->FadeOut(0.1f, 0.0f);
+		GetCurrentWeaponMode()->FireAC = NULL;
 
-		PlayWeaponSound(FireFinishSound);
+		PlayWeaponSound(GetCurrentWeaponMode()->FireFinishSound);
 	}
 }
 
@@ -928,6 +928,11 @@ bool AKriegerWeapon::IsAttachedToPawn() const
 EWeaponState::Type AKriegerWeapon::GetCurrentState() const
 {
 	return CurrentState;
+}
+
+FWeaponMode* AKriegerWeapon::GetCurrentWeaponMode() const
+{
+	return CurrentWeaponFireMode;
 }
 
 int32 AKriegerWeapon::GetCurrentAmmo() const
@@ -995,7 +1000,7 @@ void AKriegerWeapon::ServerNotifyHit_Implementation(const FHitResult Impact, FVe
 
 		// is the angle between the hit and the view within allowed limits (limit + weapon max angle)
 		const float ViewDotHitDir = FVector::DotProduct(Instigator->GetViewRotation().Vector(), ViewDir);
-		if (ViewDotHitDir > InstantConfig.AllowedViewDotHitDir - WeaponAngleDot)
+		if (ViewDotHitDir > GetCurrentWeaponMode()->InstantConfig.AllowedViewDotHitDir - WeaponAngleDot)
 		{
 			if (CurrentState != EWeaponState::Idle)
 			{
@@ -1019,7 +1024,7 @@ void AKriegerWeapon::ServerNotifyHit_Implementation(const FHitResult Impact, FVe
 
 					// calculate the box extent, and increase by a leeway
 					FVector BoxExtent = 0.5 * (HitBox.Max - HitBox.Min);
-					BoxExtent *= InstantConfig.ClientSideHitLeeway;
+					BoxExtent *= GetCurrentWeaponMode()->InstantConfig.ClientSideHitLeeway;
 
 					// avoid precision errors with really thin objects
 					BoxExtent.X = FMath::Max(20.0f, BoxExtent.X);
@@ -1043,7 +1048,7 @@ void AKriegerWeapon::ServerNotifyHit_Implementation(const FHitResult Impact, FVe
 				}
 			}
 		}
-		else if (ViewDotHitDir <= InstantConfig.AllowedViewDotHitDir)
+		else if (ViewDotHitDir <= GetCurrentWeaponMode()->InstantConfig.AllowedViewDotHitDir)
 		{
 			UE_LOG(LogWeapon, Log, TEXT("%s Rejected client side hit of %s (facing too far from the hit direction)"), *GetNameSafe(this), *GetNameSafe(Impact.GetActor()));
 		}
@@ -1071,7 +1076,7 @@ void AKriegerWeapon::ServerNotifyMiss_Implementation(FVector_NetQuantizeNormal S
 	// play FX locally
 	if (GetNetMode() != NM_DedicatedServer)
 	{
-		const FVector EndTrace = Origin + ShootDir * InstantConfig.WeaponRange;
+		const FVector EndTrace = Origin + ShootDir * GetCurrentWeaponMode()->InstantConfig.WeaponRange;
 		SpawnTrailEffect(EndTrace);
 	}
 }
@@ -1124,7 +1129,7 @@ void AKriegerWeapon::ProcessInstantHit_Confirmed(const FHitResult& Impact, const
 	// play FX locally
 	if (GetNetMode() != NM_DedicatedServer)
 	{
-		const FVector EndTrace = Origin + ShootDir * InstantConfig.WeaponRange;
+		const FVector EndTrace = Origin + ShootDir * GetCurrentWeaponMode()->InstantConfig.WeaponRange;
 		const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
 
 		SpawnTrailEffect(EndPoint);
@@ -1151,10 +1156,10 @@ bool AKriegerWeapon::ShouldDealDamage(AActor* TestActor) const
 void AKriegerWeapon::DealDamage(const FHitResult& Impact, const FVector& ShootDir)
 {
 	FPointDamageEvent PointDmg;
-	PointDmg.DamageTypeClass = InstantConfig.DamageType;
+	PointDmg.DamageTypeClass = GetCurrentWeaponMode()->InstantConfig.DamageType;
 	PointDmg.HitInfo = Impact;
 	PointDmg.ShotDirection = ShootDir;
-	PointDmg.Damage = InstantConfig.HitDamage;
+	PointDmg.Damage = GetCurrentWeaponMode()->InstantConfig.HitDamage;
 
 	Impact.GetActor()->TakeDamage(PointDmg.Damage, PointDmg, MyPawn->Controller, this);
 }
@@ -1165,7 +1170,7 @@ void AKriegerWeapon::DealDamage(const FHitResult& Impact, const FVector& ShootDi
 
 float AKriegerWeapon::GetCurrentSpread() const
 {
-	float FinalSpread = InstantConfig.WeaponSpread + CurrentFiringSpread;
+	float FinalSpread = GetCurrentWeaponMode()->InstantConfig.WeaponSpread + CurrentFiringSpread;
 
 	// @TODO Walk/run and Targeting modificator
 	/*if (MyPawn && MyPawn->IsTargeting())
@@ -1193,7 +1198,7 @@ void AKriegerWeapon::SimulateInstantHit(const FVector& ShotOrigin, int32 RandomS
 	const FVector StartTrace = ShotOrigin;
 	const FVector AimDir = GetAdjustedAim();
 	const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, ConeHalfAngle, ConeHalfAngle);
-	const FVector EndTrace = StartTrace + ShootDir * InstantConfig.WeaponRange;
+	const FVector EndTrace = StartTrace + ShootDir * GetCurrentWeaponMode()->InstantConfig.WeaponRange;
 
 	FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
 	if (Impact.bBlockingHit)
@@ -1209,7 +1214,7 @@ void AKriegerWeapon::SimulateInstantHit(const FVector& ShotOrigin, int32 RandomS
 
 void AKriegerWeapon::SpawnImpactEffects(const FHitResult& Impact)
 {
-	if (ImpactTemplate && Impact.bBlockingHit)
+	if (GetCurrentWeaponMode()->ImpactTemplate && Impact.bBlockingHit)
 	{
 		FHitResult UseImpact = Impact;
 
@@ -1222,7 +1227,7 @@ void AKriegerWeapon::SpawnImpactEffects(const FHitResult& Impact)
 			UseImpact = Hit;
 		}
 
-		AKriegerImpactEffect* EffectActor = GetWorld()->SpawnActorDeferred<AKriegerImpactEffect>(ImpactTemplate, Impact.ImpactPoint, Impact.ImpactNormal.Rotation());
+		AKriegerImpactEffect* EffectActor = GetWorld()->SpawnActorDeferred<AKriegerImpactEffect>(GetCurrentWeaponMode()->ImpactTemplate, Impact.ImpactPoint, Impact.ImpactNormal.Rotation());
 		if (EffectActor)
 		{
 			EffectActor->SurfaceHit = UseImpact;
@@ -1233,14 +1238,14 @@ void AKriegerWeapon::SpawnImpactEffects(const FHitResult& Impact)
 
 void AKriegerWeapon::SpawnTrailEffect(const FVector& EndPoint)
 {
-	if (TrailFX)
+	if (GetCurrentWeaponMode()->TrailFX)
 	{
 		const FVector Origin = GetMuzzleLocation();
 
-		UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(this, TrailFX, Origin);
+		UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(this, GetCurrentWeaponMode()->TrailFX, Origin);
 		if (TrailPSC)
 		{
-			TrailPSC->SetVectorParameter(TrailTargetParam, EndPoint);
+			TrailPSC->SetVectorParameter(GetCurrentWeaponMode()->TrailTargetParam, EndPoint);
 		}
 	}
 }
@@ -1258,7 +1263,7 @@ bool AKriegerWeapon::ServerFireProjectile_Validate(FVector Origin, FVector_NetQu
 void AKriegerWeapon::ServerFireProjectile_Implementation(FVector Origin, FVector_NetQuantizeNormal ShootDir)
 {
 	FTransform SpawnTM(ShootDir.Rotation(), Origin);
-	AKriegerProjectile* Projectile = Cast<AKriegerProjectile>(UGameplayStatics::BeginSpawningActorFromClass(this, ProjectileConfig.ProjectileClass, SpawnTM));
+	AKriegerProjectile* Projectile = Cast<AKriegerProjectile>(UGameplayStatics::BeginSpawningActorFromClass(this, GetCurrentWeaponMode()->ProjectileConfig.ProjectileClass, SpawnTM));
 	if (Projectile)
 	{
 		Projectile->Instigator = Instigator;
@@ -1271,5 +1276,5 @@ void AKriegerWeapon::ServerFireProjectile_Implementation(FVector Origin, FVector
 
 void AKriegerWeapon::ApplyWeaponConfig(FProjectileWeaponData& Data)
 {
-	Data = ProjectileConfig;
+	Data = GetCurrentWeaponMode()->ProjectileConfig;
 }

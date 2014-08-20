@@ -192,3 +192,148 @@ struct FInstantWeaponData
 		AllowedViewDotHitDir = 0.8f;
 	}
 };
+
+UENUM(BlueprintType)
+namespace EWeaponType
+{
+	enum Type
+	{
+		InstantHit,
+		Projectile
+	};
+}
+
+USTRUCT(BlueprintType)
+struct FWeaponMode
+{
+	GENERATED_USTRUCT_BODY()
+
+	
+	//////////////////////////////////////////////////////////////////////////
+	// GENERAL CONFIG
+
+	/** How weapon hadles fire */
+	UPROPERTY(EditDefaultsOnly, Category = General)
+	TEnumAsByte<EWeaponType::Type> WeaponType;
+
+	/** Number of bullets in burst */
+	UPROPERTY(EditDefaultsOnly, Category = General)
+	int32 BulletsPerShot;
+
+	/** Shot all bullets at the same time or not? */
+	UPROPERTY(EditDefaultsOnly, Category = General)
+	bool ShotBulletsSimultaneously;
+
+	/** Ammo use for burst. If == -1 bullets number in burst will be used */
+	UPROPERTY(EditDefaultsOnly, Category = Ammo)
+	int32 AmmoPerShot;
+
+	/** Time between two consecutive bursts */
+	UPROPERTY(EditDefaultsOnly, Category=WeaponStat)
+	float TimeBetweenBursts;
+
+	/** Time between two shots in burst */
+	UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
+	float TimeBetweenShots;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Effects
+	
+	/** Firing audio (bLoopedFireSound set) */
+	UPROPERTY(Transient)
+	UAudioComponent* FireAC;
+
+	/** Weapon barrels */
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	TArray<FWeaponBarrel> WeaponBarrels;
+
+	/** FX for muzzle flash */
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	UParticleSystem* MuzzleFX;
+
+	/** Camera shake on firing */
+	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	TSubclassOf<UCameraShake> FireCameraShake;
+
+	/** Force feedback effect to play when the weapon is fired */
+	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	UForceFeedbackEffect *FireForceFeedback;
+
+	/** Single fire sound (bLoopedFireSound not set) */
+	UPROPERTY(EditDefaultsOnly, Category=Sound)
+	USoundCue* FireSound;
+
+	/** Looped fire sound (bLoopedFireSound set) */
+	UPROPERTY(EditDefaultsOnly, Category=Sound)
+	USoundCue* FireLoopSound;
+
+	/** Finished burst sound (bLoopedFireSound set) */
+	UPROPERTY(EditDefaultsOnly, Category=Sound)
+	USoundCue* FireFinishSound;
+
+	/** Fire animations */
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	UAnimMontage* FireAnim;
+
+	/** Is muzzle FX looped? */
+	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	uint32 bLoopedMuzzleFX : 1;
+
+	/** Is muzzle FX played simultaneously? */
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	uint32 bSimultaneousMuzzleFX : 1;
+
+	/** Is fire sound looped? */
+	UPROPERTY(EditDefaultsOnly, Category=Sound)
+	uint32 bLoopedFireSound : 1;
+
+	/** Is fire animation looped? */
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	uint32 bLoopedFireAnim : 1;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// INSTANT HIT WEAPON
+
+	/** Weapon config */
+	UPROPERTY(EditDefaultsOnly, Category=ProjectileWeapon)
+	FProjectileWeaponData ProjectileConfig;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// INSTANT HIT WEAPON
+
+	/** Instant weapon config */
+	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
+	FInstantWeaponData InstantConfig;
+
+	/** Impact effects */
+	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
+	TSubclassOf<class AKriegerImpactEffect> ImpactTemplate;
+
+	/** Smoke trail for instant hit weapon */
+	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
+	UParticleSystem* TrailFX;
+
+	/** Param name for beam target in smoke trail */
+	UPROPERTY(EditDefaultsOnly, Category=InstantHitWeapon)
+	FName TrailTargetParam;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// DEFAULTS
+
+	FWeaponMode()
+	{
+		BulletsPerShot = 1;
+		ShotBulletsSimultaneously = false;
+		AmmoPerShot = -1;
+		TimeBetweenBursts = 0.2f;
+		TimeBetweenShots = 0.2f;
+
+		bLoopedMuzzleFX = false;
+		bLoopedFireAnim = false;
+	}
+
+};
