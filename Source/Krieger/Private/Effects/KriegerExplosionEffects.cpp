@@ -60,7 +60,7 @@ void AKriegerExplosionEffect::Tick(float DeltaSeconds)
 		const float FadeAlpha = 1.0f - FMath::Square(TimeRemaining / ExplosionLightFadeOut);
 
 		UPointLightComponent* DefLight = Cast<UPointLightComponent>(GetClass()->GetDefaultSubobjectByName(ExplosionLightComponentName));
-		ExplosionLight->SetBrightness(DefLight->Intensity * FadeAlpha);
+		ExplosionLight->SetIntensity(DefLight->Intensity * FadeAlpha);
 	}
 	else
 	{
