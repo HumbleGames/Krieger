@@ -11,8 +11,7 @@ public class Krieger : ModuleRules
         // Custom plugins
         PublicDependencyModuleNames.AddRange(
             new string[] {
-                "VaRestPlugin",
-                "VaQuoleUIPlugin"
+                "VaRestPlugin"
             });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
