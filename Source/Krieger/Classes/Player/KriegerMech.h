@@ -57,8 +57,8 @@ protected:
 
 protected:
 	/** [local] Character specific fire implementation */
-	virtual void StartWeaponFire(int32 WeaponIdx) override;
-	virtual void StopWeaponFire(int32 WeaponIdx) override;
+	virtual void StartWeaponFire(int32 WeaponIdx, int32 WeaponMode) override;
+	virtual void StopWeaponFire(int32 WeaponIdx, int32 WeaponMode) override;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ protected:
 
 	/** [local] Start Jetpack "fire" */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Mech")
-	void ActivateJetpack();
+	void ActivateJetpack(bool ActiveMode = true);
 
 	/** [local] Stop Jetpack "fire" */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Mech")

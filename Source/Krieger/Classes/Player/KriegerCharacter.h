@@ -76,16 +76,16 @@ public:
 public:
 	/** [local] starts weapon fire */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
-	void StartFire(int32 WeaponIdx = 0);
+	void StartFire(int32 WeaponIdx = 0, int32 WeaponMode = 0);
 
 	/** [local] stops weapon fire */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Character")
-	void StopFire(int32 WeaponIdx = 0);
+	void StopFire(int32 WeaponIdx = 0, int32 WeaponMode = 0);
 
 protected:
 	/** [local] Character specific fire implementation */
-	virtual void StartWeaponFire(int32 WeaponIdx) PURE_VIRTUAL(AKriegerCharacter::StartWeaponFire, );
-	virtual void StopWeaponFire(int32 WeaponIdx) PURE_VIRTUAL(AKriegerCharacter::StopWeaponFire, );
+	virtual void StartWeaponFire(int32 WeaponIdx, int32 WeaponMode) PURE_VIRTUAL(AKriegerCharacter::StartWeaponFire, );
+	virtual void StopWeaponFire(int32 WeaponIdx, int32 WeaponMode) PURE_VIRTUAL(AKriegerCharacter::StopWeaponFire, );
 
 public:
 	/** Check if pawn can fire weapon */

@@ -192,35 +192,35 @@ void AKriegerMech::SetCurrentWeapon(AKriegerWeapon** WeaponSlot, AKriegerWeapon*
 //////////////////////////////////////////////////////////////////////////
 // Weapon usage
 
-void AKriegerMech::StartWeaponFire(int32 WeaponIdx)
+void AKriegerMech::StartWeaponFire(int32 WeaponIdx, int32 WeaponMode)
 {
 	switch (WeaponIdx)
 	{
 	case 0:
 		if (WeaponRight != nullptr)
 		{
-			WeaponRight->StartFire();
+			WeaponRight->StartFire(0);
 		}
 		break;
 
 	case 1:
 		if (WeaponLeft != nullptr)
 		{
-			WeaponLeft->StartFire();
+			WeaponLeft->StartFire(0);
 		}
 		break;
 
 	case 2:
 		if (WeaponBody != nullptr)
 		{
-			WeaponBody->StartFire();
+			WeaponBody->StartFire(0);
 		}
 		break;
 
 	case 3:
 		if (WeaponBack != nullptr)
 		{
-			WeaponBack->StartFire();
+			WeaponBack->StartFire(0);
 		}
 		break;
 
@@ -229,7 +229,7 @@ void AKriegerMech::StartWeaponFire(int32 WeaponIdx)
 	}
 }
 
-void AKriegerMech::StopWeaponFire(int32 WeaponIdx)
+void AKriegerMech::StopWeaponFire(int32 WeaponIdx, int32 WeaponMode)
 {
 	switch (WeaponIdx)
 	{
@@ -275,11 +275,21 @@ AKriegerJetpack* AKriegerMech::GetJetpack()
 	return (Jetpack != NULL) ? Cast<AKriegerJetpack>(Jetpack) : NULL;
 }
 
-void AKriegerMech::ActivateJetpack()
+void AKriegerMech::ActivateJetpack(bool ActiveMode)
 {
 	if (Jetpack != nullptr)
 	{
-		Jetpack->StartFire();
+		if (ActiveMode)
+		{
+			Jetpack->StopFire();
+			Jetpack->StartFire(0);
+		}
+		else
+		{
+			Jetpack->StopFire();
+			Jetpack->StartFire(1);
+		}
+		
 	}
 }
 

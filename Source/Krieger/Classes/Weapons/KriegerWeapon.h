@@ -37,8 +37,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = General)
 	FWeaponMode PrimaryFireMode;
 
-	/** Secondary weapon mode */
+	/** Is Secondary weapon fire mode enabled? */
 	UPROPERTY(EditDefaultsOnly, Category = General)
+	bool bSecondaryFireModeEnabled;
+
+	/** Secondary weapon mode */
+	UPROPERTY(EditDefaultsOnly, Category = General, Meta = (EditCondition = "bSecondaryFireModeEnabled"))
 	FWeaponMode SecondaryFireMode;
 
 	/** Inifite ammo for reloads */
@@ -159,7 +163,7 @@ protected:
 public:
 	/** [local + server] Start weapon fire */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
-	virtual void StartFire();
+	virtual void StartFire(uint32 WeaponMode);
 
 	/** [local + server] Stop weapon fire */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
@@ -279,6 +283,7 @@ protected:
 	EWeaponState::Type CurrentState;
 
 	/** Current fire mode */
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_CurrentFireMode)
 	uint32 CurrentFireMode;
 
 	/** Current fire mode */
@@ -314,7 +319,7 @@ protected:
 	// Input - server side
 
 	UFUNCTION(reliable, server, WithValidation)
-	void ServerStartFire();
+	void ServerStartFire(uint32 WeaponMode);
 
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerStopFire();
@@ -337,6 +342,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_Reload();
+
+	UFUNCTION()
+	void OnRep_CurrentFireMode();
 
 	/** Called in network play to do the cosmetic fx for firing */
 	virtual void SimulateWeaponFire();
@@ -375,6 +383,9 @@ protected:
 
 	/** Determine current weapon state */
 	void DetermineWeaponState();
+
+	/** Determine current weapon mode */
+	void DetermineWeaponMode();
 
 
 	//////////////////////////////////////////////////////////////////////////

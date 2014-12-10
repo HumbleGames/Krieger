@@ -191,15 +191,18 @@ void AKriegerWeapon::DetachMeshFromPawn()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void AKriegerWeapon::StartFire()
+void AKriegerWeapon::StartFire(uint32 WeaponMode)
 {
 	if (Role < ROLE_Authority)
 	{
-		ServerStartFire();
+		ServerStartFire(WeaponMode);
 	}
 
 	if (!bWantsToFire)
 	{
+		CurrentFireMode = WeaponMode;
+		DetermineWeaponMode();
+
 		bWantsToFire = true;
 		DetermineWeaponState();
 	}
@@ -260,14 +263,14 @@ void AKriegerWeapon::StopReload()
 	}
 }
 
-bool AKriegerWeapon::ServerStartFire_Validate()
+bool AKriegerWeapon::ServerStartFire_Validate(uint32 WeaponMode)
 {
 	return true;
 }
 
-void AKriegerWeapon::ServerStartFire_Implementation()
+void AKriegerWeapon::ServerStartFire_Implementation(uint32 WeaponMode)
 {
-	StartFire();
+	StartFire(WeaponMode);
 }
 
 bool AKriegerWeapon::ServerStopFire_Validate()
@@ -609,6 +612,18 @@ void AKriegerWeapon::DetermineWeaponState()
 	SetWeaponState(NewState);
 }
 
+void AKriegerWeapon::DetermineWeaponMode()
+{
+	if (CurrentFireMode == 0)
+	{
+		CurrentWeaponFireMode = &PrimaryFireMode;
+	}
+	else
+	{
+		CurrentWeaponFireMode = &SecondaryFireMode;
+	}
+}
+
 void AKriegerWeapon::OnBurstStarted()
 {
 	// start firing, can be delayed to satisfy TimeBetweenShots
@@ -793,6 +808,11 @@ void AKriegerWeapon::OnRep_Reload()
 	{
 		StopReload();
 	}
+}
+
+void AKriegerWeapon::OnRep_CurrentFireMode()
+{
+	DetermineWeaponMode();
 }
 
 void AKriegerWeapon::SimulateWeaponFire()
