@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerHUD::AKriegerHUD(const class FPostConstructInitializeProperties& PCIP)
+AKriegerHUD::AKriegerHUD(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 

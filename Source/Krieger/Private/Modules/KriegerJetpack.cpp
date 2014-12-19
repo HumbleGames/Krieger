@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerJetpack::AKriegerJetpack(const class FPostConstructInitializeProperties& PCIP) : Super(PCIP)
+AKriegerJetpack::AKriegerJetpack(const class FObjectInitializer& PCIP) : Super(PCIP)
 {
 	
 }

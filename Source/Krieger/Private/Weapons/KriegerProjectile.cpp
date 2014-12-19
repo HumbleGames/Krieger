@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerProjectile::AKriegerProjectile(const class FPostConstructInitializeProperties& PCIP) : Super(PCIP)
+AKriegerProjectile::AKriegerProjectile(const class FObjectInitializer& PCIP) : Super(PCIP)
 {
 	CollisionComp = PCIP.CreateDefaultSubobject<USphereComponent>(this, TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);

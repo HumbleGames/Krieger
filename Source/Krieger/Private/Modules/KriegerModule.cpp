@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerModule::AKriegerModule(const class FPostConstructInitializeProperties& PCIP) : Super(PCIP)
+AKriegerModule::AKriegerModule(const class FObjectInitializer& PCIP) : Super(PCIP)
 {
 	
 }

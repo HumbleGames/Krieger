@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerMech::AKriegerMech(const class FPostConstructInitializeProperties& PCIP) 
+AKriegerMech::AKriegerMech(const class FObjectInitializer& PCIP) 
 	: Super(PCIP)
 {
 	Health = 100;

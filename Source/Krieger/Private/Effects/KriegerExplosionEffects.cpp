@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerExplosionEffect::AKriegerExplosionEffect(const class FPostConstructInitializeProperties& PCIP) : Super(PCIP)
+AKriegerExplosionEffect::AKriegerExplosionEffect(const class FObjectInitializer& PCIP) : Super(PCIP)
 {
 	ExplosionLightComponentName = TEXT("ExplosionLight");
 

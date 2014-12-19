@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerWeapon::AKriegerWeapon(const class FPostConstructInitializeProperties& PCIP) : Super(PCIP)
+AKriegerWeapon::AKriegerWeapon(const class FObjectInitializer& PCIP) : Super(PCIP)
 {
 	Mesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponMesh"));
 	Mesh->MeshComponentUpdateFlag = EMeshComponentUpdateFlag::OnlyTickPoseWhenRendered;

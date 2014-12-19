@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-UKriegerCharacterMovement::UKriegerCharacterMovement(const class FPostConstructInitializeProperties& PCIP)
+UKriegerCharacterMovement::UKriegerCharacterMovement(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 }

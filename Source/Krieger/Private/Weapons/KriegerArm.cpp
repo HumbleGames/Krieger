@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerArm::AKriegerArm(const class FPostConstructInitializeProperties& PCIP) : Super(PCIP)
+AKriegerArm::AKriegerArm(const class FObjectInitializer& PCIP) : Super(PCIP)
 {
 	
 }

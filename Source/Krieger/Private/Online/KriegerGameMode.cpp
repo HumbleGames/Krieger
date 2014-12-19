@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerGameMode::AKriegerGameMode(const class FPostConstructInitializeProperties& PCIP)
+AKriegerGameMode::AKriegerGameMode(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 	PlayerControllerClass = AKriegerPlayerController::StaticClass();

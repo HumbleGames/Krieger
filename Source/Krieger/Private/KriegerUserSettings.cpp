@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-UKriegerUserSettings::UKriegerUserSettings(const class FPostConstructInitializeProperties& PCIP)
+UKriegerUserSettings::UKriegerUserSettings(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 	SetToDefaults();

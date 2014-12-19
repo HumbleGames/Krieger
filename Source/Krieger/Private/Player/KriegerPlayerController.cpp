@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerPlayerController::AKriegerPlayerController(const class FPostConstructInitializeProperties& PCIP)
+AKriegerPlayerController::AKriegerPlayerController(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 

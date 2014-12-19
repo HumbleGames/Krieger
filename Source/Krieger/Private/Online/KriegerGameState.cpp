@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerGameState::AKriegerGameState(const class FPostConstructInitializeProperties& PCIP)
+AKriegerGameState::AKriegerGameState(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 	NumTeams = 0;

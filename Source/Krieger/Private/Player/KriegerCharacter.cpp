@@ -2,12 +2,12 @@
 
 #include "Krieger.h"
 
-AKriegerCharacter::AKriegerCharacter(const class FPostConstructInitializeProperties& PCIP) 
+AKriegerCharacter::AKriegerCharacter(const class FObjectInitializer& PCIP) 
 	: Super(PCIP.SetDefaultSubobjectClass<UKriegerCharacterMovement>(ACharacter::CharacterMovementComponentName))
 {
-	CapsuleComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	CapsuleComponent->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
-	CapsuleComponent->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
 	Health = 100;
 	MaxHealth = 100;
@@ -24,9 +24,9 @@ void AKriegerCharacter::PostInitializeComponents()
 	}
 
 	// Create material instance for setting team colors
-	for (int32 iMat = 0; iMat < Mesh->GetNumMaterials(); iMat++)
+	for (int32 iMat = 0; iMat < GetMesh()->GetNumMaterials(); iMat++)
 	{
-		MeshMIDs.Add(Mesh->CreateAndSetMaterialInstanceDynamic(iMat));
+		MeshMIDs.Add(GetMesh()->CreateAndSetMaterialInstanceDynamic(iMat));
 	}
 
 	// Play respawn effects
@@ -197,7 +197,7 @@ void AKriegerCharacter::ServerSetTargetPoint_Implementation(const FVector Target
 
 USkeletalMeshComponent* AKriegerCharacter::GetPawnMesh() const
 {
-	return Mesh;
+	return GetMesh();
 }
 
 void AKriegerCharacter::UpdateTeamColors(UMaterialInstanceDynamic* UseMID)

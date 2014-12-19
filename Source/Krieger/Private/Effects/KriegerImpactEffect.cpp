@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerImpactEffect::AKriegerImpactEffect(const class FPostConstructInitializeProperties& PCIP) : Super(PCIP)
+AKriegerImpactEffect::AKriegerImpactEffect(const class FObjectInitializer& PCIP) : Super(PCIP)
 {
 	bAutoDestroyWhenFinished = true;
 }

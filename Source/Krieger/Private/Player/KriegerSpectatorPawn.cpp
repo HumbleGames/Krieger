@@ -2,7 +2,7 @@
 
 #include "Krieger.h"
 
-AKriegerSpectatorPawn::AKriegerSpectatorPawn(const class FPostConstructInitializeProperties& PCIP)
+AKriegerSpectatorPawn::AKriegerSpectatorPawn(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 
