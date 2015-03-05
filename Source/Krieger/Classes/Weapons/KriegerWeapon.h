@@ -80,7 +80,7 @@ protected:
 
 	/** Weapon mesh */
 	UPROPERTY(VisibleAnywhere, Category=Mesh)
-	TSubobjectPtr<USkeletalMeshComponent> Mesh;
+	USkeletalMeshComponent* Mesh;
 
 	/** Out of ammo sound */
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
@@ -313,6 +313,22 @@ protected:
 	/** Current active barrel */
 	UPROPERTY(Transient, Replicated)
 	int32 CurrentBarrel;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Timing
+
+	/** Handle for efficient management of OnEquipFinished timer */
+	FTimerHandle TimerHandle_OnEquipFinished;
+
+	/** Handle for efficient management of StopReload timer */
+	FTimerHandle TimerHandle_StopReload;
+
+	/** Handle for efficient management of ReloadWeapon timer */
+	FTimerHandle TimerHandle_ReloadWeapon;
+
+	/** Handle for efficient management of HandleFiring timer */
+	FTimerHandle TimerHandle_HandleFiring;
 
 
 	//////////////////////////////////////////////////////////////////////////

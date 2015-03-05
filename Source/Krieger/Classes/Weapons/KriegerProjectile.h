@@ -26,14 +26,14 @@ protected:
 
 	/** Movement component */
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
-	TSubobjectPtr<UProjectileMovementComponent> MovementComp;
+	UProjectileMovementComponent* MovementComp;
 
 	/** Collisions */
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
-	TSubobjectPtr<USphereComponent> CollisionComp;
+	USphereComponent* CollisionComp;
 
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
-	TSubobjectPtr<UParticleSystemComponent> ParticleComp;
+	UParticleSystemComponent* ParticleComp;
 
 	/** Effects for explosion */
 	UPROPERTY(EditDefaultsOnly, Category=Effects)

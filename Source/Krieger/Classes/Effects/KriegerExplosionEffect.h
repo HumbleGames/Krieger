@@ -18,7 +18,7 @@ class AKriegerExplosionEffect : public AActor
 
 	/** Explosion light */
 	UPROPERTY(VisibleDefaultsOnly, Category=Effect)
-	TSubobjectPtr<UPointLightComponent> ExplosionLight;
+	UPointLightComponent* ExplosionLight;
 
 	/** How long keep explosion light on? */
 	UPROPERTY(EditDefaultsOnly, Category=Effect)

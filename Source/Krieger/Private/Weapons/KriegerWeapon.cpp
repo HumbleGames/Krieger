@@ -32,7 +32,6 @@ AKriegerWeapon::AKriegerWeapon(const class FObjectInitializer& PCIP) : Super(PCI
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
 	bReplicates = true;
-	bReplicateInstigator = true;
 	bNetUseOwnerRelevancy = true;
 
 	bInfiniteAmmo = false;
@@ -93,7 +92,7 @@ void AKriegerWeapon::OnEquip()
 	EquipStartedTime = GetWorld()->GetTimeSeconds();
 	EquipDuration = Duration;
 
-	GetWorldTimerManager().SetTimer(this, &AKriegerWeapon::OnEquipFinished, Duration, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_OnEquipFinished, this, &AKriegerWeapon::OnEquipFinished, Duration, false);
 
 	if (MyPawn && MyPawn->IsLocallyControlled())
 	{
@@ -132,8 +131,8 @@ void AKriegerWeapon::OnUnEquip()
 		StopWeaponAnimation(ReloadAnim);
 		bPendingReload = false;
 
-		GetWorldTimerManager().ClearTimer(this, &AKriegerWeapon::StopReload);
-		GetWorldTimerManager().ClearTimer(this, &AKriegerWeapon::ReloadWeapon);
+		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
+		GetWorldTimerManager().ClearTimer(TimerHandle_ReloadWeapon);
 	}
 
 	if (bPendingEquip)
@@ -141,7 +140,7 @@ void AKriegerWeapon::OnUnEquip()
 		StopWeaponAnimation(EquipAnim);
 		bPendingEquip = false;
 
-		GetWorldTimerManager().ClearTimer(this, &AKriegerWeapon::OnEquipFinished);
+		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
 	}
 
 	DetermineWeaponState();
@@ -240,10 +239,10 @@ void AKriegerWeapon::StartReload(bool bFromReplication)
 			AnimDuration = NoAnimReloadDuration;
 		}
 
-		GetWorldTimerManager().SetTimer(this, &AKriegerWeapon::StopReload, AnimDuration, false);
+		GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &AKriegerWeapon::StopReload, AnimDuration, false);
 		if (Role == ROLE_Authority)
 		{
-			GetWorldTimerManager().SetTimer(this, &AKriegerWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
+			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &AKriegerWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
 		}
 		
 		if (MyPawn && MyPawn->IsLocallyControlled())
@@ -384,7 +383,7 @@ void AKriegerWeapon::FireWeapon_Projectile()
 	// and adjust directions to hit that actor
 	if (Impact.bBlockingHit)
 	{
-		const FVector AdjustedDir = (Impact.ImpactPoint - Origin).SafeNormal();
+		const FVector AdjustedDir = (Impact.ImpactPoint - Origin).GetSafeNormal();
 		bool bWeaponPenetration = false;
 
 		const float DirectionDot = FVector::DotProduct(AdjustedDir, ShootDir);
@@ -517,7 +516,7 @@ void AKriegerWeapon::HandleFiring()
 		bRefiring = (CurrentState == EWeaponState::Firing && GetCurrentWeaponMode()->TimeBetweenBursts > 0.0f);
 		if (bRefiring)
 		{
-			GetWorldTimerManager().SetTimer(this, &AKriegerWeapon::HandleFiring, GetCurrentWeaponMode()->TimeBetweenBursts, false);
+			GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &AKriegerWeapon::HandleFiring, GetCurrentWeaponMode()->TimeBetweenBursts, false);
 		}
 	}
 
@@ -630,7 +629,7 @@ void AKriegerWeapon::OnBurstStarted()
 	const float GameTime = GetWorld()->GetTimeSeconds();
 	if (LastFireTime > 0 && GetCurrentWeaponMode()->TimeBetweenBursts > 0.0f && (LastFireTime + GetCurrentWeaponMode()->TimeBetweenBursts) > GameTime)
 	{
-		GetWorldTimerManager().SetTimer(this, &AKriegerWeapon::HandleFiring, LastFireTime + GetCurrentWeaponMode()->TimeBetweenBursts - GameTime, false);
+		GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &AKriegerWeapon::HandleFiring, LastFireTime + GetCurrentWeaponMode()->TimeBetweenBursts - GameTime, false);
 	}
 	else
 	{
@@ -649,7 +648,7 @@ void AKriegerWeapon::OnBurstFinished()
 		StopSimulatingWeaponFire();
 	}
 	
-	GetWorldTimerManager().ClearTimer(this, &AKriegerWeapon::HandleFiring);
+	GetWorldTimerManager().ClearTimer(TimerHandle_HandleFiring);
 	bRefiring = false;
 
 	// Weapon type related stuff
@@ -1016,7 +1015,7 @@ void AKriegerWeapon::ServerNotifyHit_Implementation(const FHitResult Impact, FVe
 	if (Instigator && (Impact.GetActor() || Impact.bBlockingHit))
 	{
 		const FVector Origin = GetMuzzleLocation();
-		const FVector ViewDir = (Impact.Location - Origin).SafeNormal();
+		const FVector ViewDir = (Impact.Location - Origin).GetSafeNormal();
 
 		// is the angle between the hit and the view within allowed limits (limit + weapon max angle)
 		const float ViewDotHitDir = FVector::DotProduct(Instigator->GetViewRotation().Vector(), ViewDir);

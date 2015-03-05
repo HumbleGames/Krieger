@@ -34,7 +34,6 @@ AKriegerProjectile::AKriegerProjectile(const class FObjectInitializer& PCIP) : S
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
 	bReplicates = true;
-	bReplicateInstigator = true;
 	bReplicateMovement = true;
 }
 
