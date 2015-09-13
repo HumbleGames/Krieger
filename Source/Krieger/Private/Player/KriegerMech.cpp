@@ -23,7 +23,7 @@ void AKriegerMech::SpawnDefaultInventory()
 
 	// Weapons can collide mech on spawn, it's okay
 	FActorSpawnParameters SpawnInfo;
-	SpawnInfo.bNoCollisionFail = true;
+	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	// Spawn and equip default weapons
 	if (DefaultWeaponRight != nullptr)

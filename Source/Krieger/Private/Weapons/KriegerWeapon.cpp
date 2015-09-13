@@ -190,7 +190,7 @@ void AKriegerWeapon::DetachMeshFromPawn()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void AKriegerWeapon::StartFire(uint32 WeaponMode)
+void AKriegerWeapon::StartFire(int32 WeaponMode)
 {
 	if (Role < ROLE_Authority)
 	{
@@ -672,7 +672,7 @@ UAudioComponent* AKriegerWeapon::PlayWeaponSound(USoundCue* Sound)
 	UAudioComponent* AC = NULL;
 	if (Sound && MyPawn)
 	{
-		AC = UGameplayStatics::PlaySoundAttached(Sound, MyPawn->GetRootComponent());
+		AC = UGameplayStatics::SpawnSoundAttached(Sound, MyPawn->GetRootComponent());
 	}
 
 	return AC;
@@ -753,7 +753,7 @@ FHitResult AKriegerWeapon::WeaponTrace(const FVector& StartTrace, const FVector&
 	TraceParams.bReturnPhysicalMaterial = true;
 
 	FHitResult Hit(ForceInit);
-	GetWorld()->LineTraceSingle(Hit, StartTrace, EndTrace, COLLISION_WEAPON, TraceParams);
+	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, COLLISION_WEAPON, TraceParams);
 
 	return Hit;
 }
@@ -1246,7 +1246,7 @@ void AKriegerWeapon::SpawnImpactEffects(const FHitResult& Impact)
 			UseImpact = Hit;
 		}
 
-		AKriegerImpactEffect* EffectActor = GetWorld()->SpawnActorDeferred<AKriegerImpactEffect>(GetCurrentWeaponMode()->ImpactTemplate, Impact.ImpactPoint, Impact.ImpactNormal.Rotation());
+		AKriegerImpactEffect* EffectActor = GetWorld()->SpawnActorDeferred<AKriegerImpactEffect>(GetCurrentWeaponMode()->ImpactTemplate, FTransform(Impact.ImpactNormal.Rotation(), Impact.ImpactPoint));
 		if (EffectActor)
 		{
 			EffectActor->SurfaceHit = UseImpact;
@@ -1282,7 +1282,7 @@ bool AKriegerWeapon::ServerFireProjectile_Validate(FVector Origin, FVector_NetQu
 void AKriegerWeapon::ServerFireProjectile_Implementation(FVector Origin, FVector_NetQuantizeNormal ShootDir)
 {
 	FTransform SpawnTM(ShootDir.Rotation(), Origin);
-	AKriegerProjectile* Projectile = Cast<AKriegerProjectile>(UGameplayStatics::BeginSpawningActorFromClass(this, GetCurrentWeaponMode()->ProjectileConfig.ProjectileClass, SpawnTM));
+	AKriegerProjectile* Projectile = Cast<AKriegerProjectile>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, GetCurrentWeaponMode()->ProjectileConfig.ProjectileClass, SpawnTM));
 	if (Projectile)
 	{
 		Projectile->Instigator = Instigator;

@@ -10,7 +10,7 @@ UCreateNewObject::UCreateNewObject(const class FObjectInitializer& PCIP)
 
 UObject* UCreateNewObject::NewObjectFromBlueprint(UObject* WorldContextObject, TSubclassOf<UObject> UC)
 {
-	UObject* tempObject = StaticConstructObject(UC);
+	UObject* tempObject = NewObject<UObject>(WorldContextObject, UC);
 
 	return tempObject;
 }

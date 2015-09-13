@@ -163,7 +163,7 @@ protected:
 public:
 	/** [local + server] Start weapon fire */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")
-	virtual void StartFire(uint32 WeaponMode);
+	virtual void StartFire(int32 WeaponMode);
 
 	/** [local + server] Stop weapon fire */
 	UFUNCTION(BlueprintCallable, Category = "Krieger|Weapon")

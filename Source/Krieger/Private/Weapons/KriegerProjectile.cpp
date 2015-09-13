@@ -97,7 +97,7 @@ void AKriegerProjectile::Explode(const FHitResult& Impact)
 	{
 		const FRotator SpawnRotation = Impact.ImpactNormal.Rotation();
 
-		AKriegerExplosionEffect* EffectActor = GetWorld()->SpawnActorDeferred<AKriegerExplosionEffect>(ExplosionTemplate, NudgedImpactLocation, SpawnRotation);
+		AKriegerExplosionEffect* EffectActor = GetWorld()->SpawnActorDeferred<AKriegerExplosionEffect>(ExplosionTemplate, FTransform(SpawnRotation, NudgedImpactLocation));
 		if (EffectActor)
 		{
 			EffectActor->SurfaceHit = Impact;
@@ -130,7 +130,7 @@ void AKriegerProjectile::OnRep_Exploded()
 	const FVector EndTrace = GetActorLocation() + ProjDirection * 150;
 	FHitResult Impact;
 	
-	if (!GetWorld()->LineTraceSingle(Impact, StartTrace, EndTrace, COLLISION_PROJECTILE, FCollisionQueryParams(TEXT("ProjClient"), true, Instigator)))
+	if (!GetWorld()->LineTraceSingleByChannel(Impact, StartTrace, EndTrace, COLLISION_PROJECTILE, FCollisionQueryParams(TEXT("ProjClient"), true, Instigator)))
 	{
 		// Failsafe
 		Impact.ImpactPoint = GetActorLocation();
